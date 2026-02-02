@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../services/supabase';
@@ -6,15 +6,10 @@ import './Dashboard.css';
 
 const Dashboard = () => {
     const { user, profile, signOut, refreshProfile } = useAuth();
-    const navigate = useNavigate();
     const [portfolio, setPortfolio] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        fetchPortfolio();
-    }, [user]);
-
-    const fetchPortfolio = async () => {
+    const fetchPortfolio = useCallback(async () => {
         try {
             const { data, error } = await supabase
                 .from('portfolios')
@@ -32,7 +27,11 @@ const Dashboard = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [user]);
+
+    useEffect(() => {
+        fetchPortfolio();
+    }, [fetchPortfolio]);
 
     const handleUnpublish = async () => {
         if (!window.confirm('Are you sure you want to unpublish your portfolio?')) {

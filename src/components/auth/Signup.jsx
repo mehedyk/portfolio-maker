@@ -55,7 +55,7 @@ const Signup = () => {
 
         setLoading(true);
 
-        const { data, error } = await signUp(
+        const { error } = await signUp(
             formData.email,
             formData.password,
             formData.fullName,

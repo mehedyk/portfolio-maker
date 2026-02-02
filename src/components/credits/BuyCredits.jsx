@@ -6,7 +6,7 @@ import { uploadToCloudinary } from '../../services/cloudinary';
 import './BuyCredits.css';
 
 const BuyCredits = () => {
-    const { user, profile, refreshProfile } = useAuth();
+    const { user } = useAuth();
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         amount: '',

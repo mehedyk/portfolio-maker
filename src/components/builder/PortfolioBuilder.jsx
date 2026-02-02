@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../services/supabase';
@@ -38,14 +38,6 @@ const PortfolioBuilder = () => {
         },
     });
 
-    useEffect(() => {
-        fetchProfessions();
-        fetchThemes();
-        if (portfolioId) {
-            fetchPortfolio();
-        }
-    }, [portfolioId]);
-
     const fetchProfessions = async () => {
         const { data } = await supabase.from('professions').select('*').order('name');
         setProfessions(data || []);
@@ -56,7 +48,7 @@ const PortfolioBuilder = () => {
         setThemes(data || []);
     };
 
-    const fetchPortfolio = async () => {
+    const fetchPortfolio = useCallback(async () => {
         const { data } = await supabase
             .from('portfolios')
             .select('*')
@@ -72,7 +64,15 @@ const PortfolioBuilder = () => {
                 images: data.images || formData.images,
             });
         }
-    };
+    }, [portfolioId, formData.content, formData.images]);
+
+    useEffect(() => {
+        fetchProfessions();
+        fetchThemes();
+        if (portfolioId) {
+            fetchPortfolio();
+        }
+    }, [portfolioId, fetchPortfolio]);
 
     const handleImageUpload = async (e, type) => {
         const file = e.target.files[0];

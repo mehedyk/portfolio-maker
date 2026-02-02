@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '../../services/supabase';
 import './PublicPortfolio.css';
@@ -9,11 +9,7 @@ const PublicPortfolio = () => {
     const [loading, setLoading] = useState(true);
     const [notFound, setNotFound] = useState(false);
 
-    useEffect(() => {
-        fetchPortfolio();
-    }, [username]);
-
-    const fetchPortfolio = async () => {
+    const fetchPortfolio = useCallback(async () => {
         try {
             const { data, error } = await supabase
                 .from('portfolios')
@@ -38,7 +34,11 @@ const PublicPortfolio = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [username]);
+
+    useEffect(() => {
+        fetchPortfolio();
+    }, [fetchPortfolio]);
 
     if (loading) {
         return (
