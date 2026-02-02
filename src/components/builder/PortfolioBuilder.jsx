@@ -182,10 +182,10 @@ const PortfolioBuilder = () => {
                 throw new Error('Failed to create portfolio ID');
             }
 
-            // Call publish function
-            const { error } = await supabase.rpc('publish_portfolio', {
-                portfolio_id: portfolioIdToPublish,
-                user_id: user.id,
+            // Call publish SAFE function (V2)
+            const { error } = await supabase.rpc('publish_portfolio_safe', {
+                p_portfolio_id: portfolioIdToPublish,
+                p_user_id: user.id,
             });
 
             if (error) throw error;
