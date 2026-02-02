@@ -69,10 +69,27 @@ const PortfolioBuilder = () => {
     useEffect(() => {
         fetchProfessions();
         fetchThemes();
+
         if (portfolioId) {
             fetchPortfolio();
+        } else if (user) {
+            // Check if user already has a portfolio to prevent duplicate key error
+            const checkExisting = async () => {
+                const { data } = await supabase
+                    .from('portfolios')
+                    .select('id')
+                    .eq('user_id', user.id)
+                    .single();
+
+                if (data) {
+                    // Redirect to edit mode
+                    console.log('Found existing portfolio, redirecting to edit mode');
+                    navigate(`/edit/${data.id}`, { replace: true });
+                }
+            };
+            checkExisting();
         }
-    }, [portfolioId, fetchPortfolio]);
+    }, [portfolioId, fetchPortfolio, user, navigate]);
 
     const handleImageUpload = async (e, type) => {
         const file = e.target.files[0];
