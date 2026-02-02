@@ -1,0 +1,165 @@
+.public-portfolio {
+    min-height: 100vh;
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.loading-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.not-found {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.not-found h1 {
+    font-size: 120px;
+    font-weight: 700;
+    color: #667eea;
+    margin-bottom: 16px;
+}
+
+.not-found p {
+    font-size: 24px;
+    color: #6b7280;
+    margin-bottom: 32px;
+}
+
+.portfolio-banner {
+    height: 300px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.portfolio-header {
+    text-align: center;
+    padding: 60px 20px;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+}
+
+.profile-image {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    border: 5px solid white;
+    margin-bottom: 24px;
+    object-fit: cover;
+}
+
+.portfolio-header h1 {
+    font-size: 48px;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.profession {
+    font-size: 24px;
+    opacity: 0.95;
+}
+
+.portfolio-section {
+    padding: 60px 20px;
+}
+
+.portfolio-section h2 {
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    color: var(--primary-color);
+}
+
+.about-text {
+    font-size: 18px;
+    line-height: 1.8;
+    max-width: 800px;
+}
+
+.contact-section {
+    background: var(--primary-color);
+    color: white;
+}
+
+.contact-section h2 {
+    color: white;
+}
+
+.contact-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.contact-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.contact-link:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.portfolio-footer {
+    background: #1f2937;
+    color: white;
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.portfolio-footer .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.view-count {
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+    .portfolio-header h1 {
+        font-size: 32px;
+    }
+
+    .profession {
+        font-size: 18px;
+    }
+
+    .portfolio-section h2 {
+        font-size: 28px;
+    }
+
+    .about-text {
+        font-size: 16px;
+    }
+
+    .contact-links {
+        flex-direction: column;
+    }
+
+    .portfolio-footer .container {
+        flex-direction: column;
+        text-align: center;
+    }
+}
