@@ -146,12 +146,23 @@ const PortfolioBuilder = () => {
             };
 
             let portfolioIdToPublish = portfolioId;
+            let dbError = null;
 
             if (portfolioId) {
-                await supabase.from('portfolios').update(portfolioData).eq('id', portfolioId);
+                const { error } = await supabase.from('portfolios').update(portfolioData).eq('id', portfolioId);
+                dbError = error;
             } else {
-                const { data } = await supabase.from('portfolios').insert([portfolioData]).select().single();
-                portfolioIdToPublish = data.id;
+                const { data, error } = await supabase.from('portfolios').insert([portfolioData]).select().single();
+                if (data) {
+                    portfolioIdToPublish = data.id;
+                }
+                dbError = error;
+            }
+
+            if (dbError) throw dbError;
+
+            if (!portfolioIdToPublish) {
+                throw new Error('Failed to create portfolio ID');
             }
 
             // Call publish function
