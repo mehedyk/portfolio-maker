@@ -158,9 +158,10 @@ CREATE POLICY "Anyone can view themes" ON themes
 -- ============================================
 
 -- Function to publish portfolio and deduct credit
+-- Function to publish portfolio and deduct credit
 CREATE OR REPLACE FUNCTION publish_portfolio(
-  portfolio_id UUID,
-  user_id UUID
+  p_portfolio_id UUID,
+  p_user_id UUID
 )
 RETURNS BOOLEAN AS $$
 DECLARE
@@ -169,7 +170,7 @@ BEGIN
   -- Get user credits
   SELECT credits INTO user_credits
   FROM user_profiles
-  WHERE id = user_id;
+  WHERE id = p_user_id;
   
   -- Check if user has enough credits
   IF user_credits < 1 THEN
@@ -179,12 +180,12 @@ BEGIN
   -- Deduct credit
   UPDATE user_profiles
   SET credits = credits - 1
-  WHERE id = user_id;
+  WHERE id = p_user_id;
   
   -- Publish portfolio
   UPDATE portfolios
   SET is_published = true, published_at = NOW()
-  WHERE id = portfolio_id AND user_id = user_id;
+  WHERE id = p_portfolio_id AND user_id = p_user_id;
   
   RETURN TRUE;
 END;
