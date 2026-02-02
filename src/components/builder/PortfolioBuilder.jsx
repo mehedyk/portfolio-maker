@@ -184,8 +184,8 @@ const PortfolioBuilder = () => {
 
             // Call publish function
             const { error } = await supabase.rpc('publish_portfolio', {
-                p_portfolio_id: portfolioIdToPublish,
-                p_user_id: user.id,
+                portfolio_id: portfolioIdToPublish,
+                user_id: user.id,
             });
 
             if (error) throw error;
