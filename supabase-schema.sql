@@ -94,6 +94,16 @@ CREATE POLICY "Users can update own profile" ON user_profiles
 CREATE POLICY "Users can insert own profile" ON user_profiles
   FOR INSERT WITH CHECK (auth.uid() = id);
 
+-- Admins can view all user profiles
+CREATE POLICY "Admins can view all user profiles" ON user_profiles
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM user_profiles 
+      WHERE id = auth.uid() AND role = 'admin'
+    )
+  );
+
+
 -- Payment requests policies
 CREATE POLICY "Users can view own payment requests" ON payment_requests
   FOR SELECT USING (auth.uid() = user_id);
