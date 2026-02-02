@@ -9,6 +9,12 @@ const Dashboard = () => {
     const [portfolio, setPortfolio] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    // Debug: Log profile to check role
+    useEffect(() => {
+        console.log('Profile data:', profile);
+        console.log('Profile role:', profile?.role);
+    }, [profile]);
+
     const fetchPortfolio = useCallback(async () => {
         try {
             const { data, error } = await supabase
@@ -82,6 +88,16 @@ const Dashboard = () => {
                                     Admin Panel
                                 </Link>
                             )}
+                            <button
+                                onClick={() => {
+                                    refreshProfile();
+                                    alert('Profile refreshed! Check console for role.');
+                                }}
+                                className="btn btn-secondary"
+                                title="Refresh profile data"
+                            >
+                                🔄 Refresh
+                            </button>
                             <button onClick={signOut} className="btn btn-secondary">
                                 Sign Out
                             </button>
