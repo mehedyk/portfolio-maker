@@ -16,12 +16,29 @@ const Signup = () => {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [loading, setLoading] = useState(false);
+    const [passwordStrength, setPasswordStrength] = useState('');
 
     const handleChange = (e) => {
+        const { name, value } = e.target;
         setFormData({
             ...formData,
-            [e.target.name]: e.target.value,
+            [name]: value,
         });
+
+        // Check password strength
+        if (name === 'password') {
+            checkPasswordStrength(value);
+        }
+    };
+
+    const checkPasswordStrength = (password) => {
+        if (password.length < 6) {
+            setPasswordStrength('weak');
+        } else if (password.length < 10) {
+            setPasswordStrength('medium');
+        } else {
+            setPasswordStrength('strong');
+        }
     };
 
     const validateForm = () => {
@@ -77,8 +94,13 @@ const Signup = () => {
     return (
         <div className="auth-container">
             <div className="auth-card">
-                <h1 className="auth-title">Create Account</h1>
-                <p className="auth-subtitle">Get started with your portfolio</p>
+                <div className="auth-logo">
+                    <div className="auth-logo-icon">💼</div>
+                    <span className="auth-logo-text">Portfolio Builder</span>
+                </div>
+
+                <h1 className="auth-title">Create Your Account</h1>
+                <p className="auth-subtitle">Start building your professional portfolio today</p>
 
                 <form onSubmit={handleSubmit} className="auth-form">
                     <div className="form-group">
@@ -91,6 +113,7 @@ const Signup = () => {
                             onChange={handleChange}
                             required
                             placeholder="John Doe"
+                            autoComplete="name"
                         />
                     </div>
 
@@ -104,14 +127,15 @@ const Signup = () => {
                             onChange={handleChange}
                             required
                             placeholder="johndoe"
+                            autoComplete="username"
                         />
-                        <small style={{ color: '#6b7280', fontSize: '12px' }}>
+                        <p className="password-hint">
                             Your portfolio will be at: /p/{formData.username || 'username'}
-                        </small>
+                        </p>
                     </div>
 
                     <div className="form-group">
-                        <label className="label">Email</label>
+                        <label className="label">Email Address</label>
                         <input
                             type="email"
                             name="email"
@@ -120,6 +144,7 @@ const Signup = () => {
                             onChange={handleChange}
                             required
                             placeholder="you@example.com"
+                            autoComplete="email"
                         />
                     </div>
 
@@ -133,7 +158,18 @@ const Signup = () => {
                             onChange={handleChange}
                             required
                             placeholder="••••••••"
+                            autoComplete="new-password"
                         />
+                        {formData.password && (
+                            <div className="password-strength">
+                                <div className={`password-strength-bar ${passwordStrength}`}></div>
+                            </div>
+                        )}
+                        {formData.password && (
+                            <p className="password-hint">
+                                Strength: {passwordStrength === 'weak' ? '⚠️ Weak' : passwordStrength === 'medium' ? '⚡ Good' : '✅ Strong'}
+                            </p>
+                        )}
                     </div>
 
                     <div className="form-group">
@@ -146,19 +182,31 @@ const Signup = () => {
                             onChange={handleChange}
                             required
                             placeholder="••••••••"
+                            autoComplete="new-password"
                         />
                     </div>
 
                     {error && <div className="error">{error}</div>}
                     {success && <div className="success">{success}</div>}
 
-                    <button type="submit" className="btn btn-primary" disabled={loading}>
-                        {loading ? 'Creating account...' : 'Sign Up'}
+                    <button type="submit" className="btn btn-primary btn-large" disabled={loading}>
+                        {loading ? (
+                            <>
+                                <div className="spinner" style={{ width: '20px', height: '20px', margin: '0' }}></div>
+                                <span>Creating account...</span>
+                            </>
+                        ) : (
+                            <>
+                                <span>Create Account</span>
+                                <span>→</span>
+                            </>
+                        )}
                     </button>
                 </form>
 
                 <p className="auth-footer">
-                    Already have an account? <Link to="/login">Sign in</Link>
+                    Already have an account?{' '}
+                    <Link to="/login">Sign in here</Link>
                 </p>
             </div>
         </div>
