@@ -38,12 +38,17 @@ const Login = () => {
     return (
         <div className="auth-container">
             <div className="auth-card">
-                <h1 className="auth-title">Welcome Back</h1>
-                <p className="auth-subtitle">Sign in to your account</p>
+                <div className="auth-logo">
+                    <div className="auth-logo-icon">💼</div>
+                    <span className="auth-logo-text">Portfolio Builder</span>
+                </div>
+
+                <h1 className="auth-title">Welcome Back!</h1>
+                <p className="auth-subtitle">Sign in to manage your portfolio</p>
 
                 <form onSubmit={handleSubmit} className="auth-form">
                     <div className="form-group">
-                        <label className="label">Email</label>
+                        <label className="label">Email Address</label>
                         <input
                             type="email"
                             name="email"
@@ -52,6 +57,7 @@ const Login = () => {
                             onChange={handleChange}
                             required
                             placeholder="you@example.com"
+                            autoComplete="email"
                         />
                     </div>
 
@@ -65,18 +71,30 @@ const Login = () => {
                             onChange={handleChange}
                             required
                             placeholder="••••••••"
+                            autoComplete="current-password"
                         />
                     </div>
 
                     {error && <div className="error">{error}</div>}
 
-                    <button type="submit" className="btn btn-primary" disabled={loading}>
-                        {loading ? 'Signing in...' : 'Sign In'}
+                    <button type="submit" className="btn btn-primary btn-large" disabled={loading}>
+                        {loading ? (
+                            <>
+                                <div className="spinner" style={{ width: '20px', height: '20px', margin: '0' }}></div>
+                                <span>Signing in...</span>
+                            </>
+                        ) : (
+                            <>
+                                <span>Sign In</span>
+                                <span>→</span>
+                            </>
+                        )}
                     </button>
                 </form>
 
                 <p className="auth-footer">
-                    Don't have an account? <Link to="/signup">Sign up</Link>
+                    Don't have an account?{' '}
+                    <Link to="/signup">Create one now</Link>
                 </p>
             </div>
         </div>
