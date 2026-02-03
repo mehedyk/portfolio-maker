@@ -111,4 +111,4 @@ All rights reserved. Will be licensed under MIT after project completion.
 
 ---
 
-**Built with ❤️ by Team Galacticos**
+**Built by Team Galacticos**

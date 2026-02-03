@@ -307,4 +307,4 @@ Customize Supabase email templates:
 
 ---
 
-**Made with ❤️ by Team Galacticos**
+**Made by Team Galacticos**
