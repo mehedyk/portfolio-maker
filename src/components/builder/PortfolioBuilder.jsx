@@ -15,6 +15,25 @@ const PortfolioBuilder = () => {
     const [themes, setThemes] = useState([]);
     const [showCreditModal, setShowCreditModal] = useState(false);
 
+    // Skills state
+    const [currentSkill, setCurrentSkill] = useState('');
+
+    // Projects state
+    const [currentProject, setCurrentProject] = useState({
+        title: '',
+        description: '',
+        link: '',
+        technologies: ''
+    });
+
+    // Experience state
+    const [currentExperience, setCurrentExperience] = useState({
+        position: '',
+        company: '',
+        duration: '',
+        description: ''
+    });
+
     const [formData, setFormData] = useState({
         profession_id: null,
         theme_id: null,
@@ -30,6 +49,7 @@ const PortfolioBuilder = () => {
                 phone: '',
                 linkedin: '',
                 github: '',
+                website: ''
             },
         },
         images: {
@@ -49,6 +69,8 @@ const PortfolioBuilder = () => {
     };
 
     const fetchPortfolio = useCallback(async () => {
+        if (!portfolioId) return;
+        
         const { data } = await supabase
             .from('portfolios')
             .select('*')
@@ -64,7 +86,7 @@ const PortfolioBuilder = () => {
                 images: data.images || formData.images,
             });
         }
-    }, [portfolioId, formData.content, formData.images]);
+    }, [portfolioId]);
 
     useEffect(() => {
         fetchProfessions();
@@ -73,7 +95,6 @@ const PortfolioBuilder = () => {
         if (portfolioId) {
             fetchPortfolio();
         } else if (user) {
-            // Check if user already has a portfolio to prevent duplicate key error
             const checkExisting = async () => {
                 const { data } = await supabase
                     .from('portfolios')
@@ -82,8 +103,6 @@ const PortfolioBuilder = () => {
                     .single();
 
                 if (data) {
-                    // Redirect to edit mode
-                    console.log('Found existing portfolio, redirecting to edit mode');
                     navigate(`/edit/${data.id}`, { replace: true });
                 }
             };
@@ -91,6 +110,7 @@ const PortfolioBuilder = () => {
         }
     }, [portfolioId, fetchPortfolio, user, navigate]);
 
+    // Image Upload
     const handleImageUpload = async (e, type) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -112,6 +132,97 @@ const PortfolioBuilder = () => {
         }
     };
 
+    // Skills Management
+    const handleAddSkill = () => {
+        if (!currentSkill.trim()) return;
+        
+        setFormData({
+            ...formData,
+            content: {
+                ...formData.content,
+                skills: [...formData.content.skills, currentSkill.trim()]
+            }
+        });
+        setCurrentSkill('');
+    };
+
+    const handleRemoveSkill = (index) => {
+        setFormData({
+            ...formData,
+            content: {
+                ...formData.content,
+                skills: formData.content.skills.filter((_, i) => i !== index)
+            }
+        });
+    };
+
+    // Projects Management
+    const handleAddProject = () => {
+        if (!currentProject.title.trim()) {
+            alert('Please enter a project title');
+            return;
+        }
+
+        setFormData({
+            ...formData,
+            content: {
+                ...formData.content,
+                projects: [...formData.content.projects, { ...currentProject }]
+            }
+        });
+        
+        setCurrentProject({
+            title: '',
+            description: '',
+            link: '',
+            technologies: ''
+        });
+    };
+
+    const handleRemoveProject = (index) => {
+        setFormData({
+            ...formData,
+            content: {
+                ...formData.content,
+                projects: formData.content.projects.filter((_, i) => i !== index)
+            }
+        });
+    };
+
+    // Experience Management
+    const handleAddExperience = () => {
+        if (!currentExperience.position.trim() || !currentExperience.company.trim()) {
+            alert('Please enter position and company');
+            return;
+        }
+
+        setFormData({
+            ...formData,
+            content: {
+                ...formData.content,
+                experience: [...formData.content.experience, { ...currentExperience }]
+            }
+        });
+        
+        setCurrentExperience({
+            position: '',
+            company: '',
+            duration: '',
+            description: ''
+        });
+    };
+
+    const handleRemoveExperience = (index) => {
+        setFormData({
+            ...formData,
+            content: {
+                ...formData.content,
+                experience: formData.content.experience.filter((_, i) => i !== index)
+            }
+        });
+    };
+
+    // Save & Publish
     const handleSaveDraft = async () => {
         setLoading(true);
         try {
@@ -147,6 +258,16 @@ const PortfolioBuilder = () => {
             return;
         }
 
+        if (!formData.profession_id || !formData.theme_id) {
+            alert('Please select profession and theme');
+            return;
+        }
+
+        if (!formData.content.about || !formData.content.contact.email) {
+            alert('Please fill in at least About section and email');
+            return;
+        }
+
         if (!window.confirm('Publish your portfolio? This will use 1 credit.')) {
             return;
         }
@@ -163,26 +284,20 @@ const PortfolioBuilder = () => {
             };
 
             let portfolioIdToPublish = portfolioId;
-            let dbError = null;
 
             if (portfolioId) {
                 const { error } = await supabase.from('portfolios').update(portfolioData).eq('id', portfolioId);
-                dbError = error;
+                if (error) throw error;
             } else {
                 const { data, error } = await supabase.from('portfolios').insert([portfolioData]).select().single();
-                if (data) {
-                    portfolioIdToPublish = data.id;
-                }
-                dbError = error;
+                if (error) throw error;
+                if (data) portfolioIdToPublish = data.id;
             }
-
-            if (dbError) throw dbError;
 
             if (!portfolioIdToPublish) {
                 throw new Error('Failed to create portfolio ID');
             }
 
-            // Call publish SAFE function (V2)
             const { error } = await supabase.rpc('publish_portfolio_safe', {
                 p_portfolio_id: portfolioIdToPublish,
                 p_user_id: user.id,
@@ -203,10 +318,17 @@ const PortfolioBuilder = () => {
 
     return (
         <div className="portfolio-builder">
+            {/* Header */}
             <div className="builder-header">
                 <div className="container">
-                    <h1>Portfolio Builder</h1>
+                    <div className="builder-title">
+                        <div className="builder-title-icon">✨</div>
+                        <span>Portfolio Builder</span>
+                    </div>
                     <div className="header-actions">
+                        <div className="credits-display">
+                            💳 {profile?.credits || 0} Credits
+                        </div>
                         <button onClick={() => navigate('/dashboard')} className="btn btn-secondary">
                             Cancel
                         </button>
@@ -214,22 +336,37 @@ const PortfolioBuilder = () => {
                             Save Draft
                         </button>
                         <button onClick={handlePublish} className="btn btn-primary" disabled={loading}>
-                            Publish ({profile?.credits || 0} credits)
+                            {loading ? 'Publishing...' : 'Publish'}
                         </button>
                     </div>
                 </div>
             </div>
 
-            <div className="container builder-content">
+            {/* Content */}
+            <div className="builder-content">
+                {/* Progress Steps */}
                 <div className="steps-indicator">
-                    <div className={`step-item ${step >= 1 ? 'active' : ''}`}>1. Profession</div>
-                    <div className={`step-item ${step >= 2 ? 'active' : ''}`}>2. Theme</div>
-                    <div className={`step-item ${step >= 3 ? 'active' : ''}`}>3. Content</div>
+                    <div className={`step-item ${step >= 1 ? 'active' : ''} ${step > 1 ? 'completed' : ''}`}>
+                        <div className="step-number">{step > 1 ? '✓' : '1'}</div>
+                        <span>Profession</span>
+                    </div>
+                    <div className={`step-item ${step >= 2 ? 'active' : ''} ${step > 2 ? 'completed' : ''}`}>
+                        <div className="step-number">{step > 2 ? '✓' : '2'}</div>
+                        <span>Theme</span>
+                    </div>
+                    <div className={`step-item ${step >= 3 ? 'active' : ''}`}>
+                        <div className="step-number">3</div>
+                        <span>Content</span>
+                    </div>
                 </div>
 
+                {/* Step 1: Profession Selection */}
                 {step === 1 && (
                     <div className="step-content">
-                        <h2>Select Your Profession</h2>
+                        <h2>Choose Your Profession</h2>
+                        <p className="step-description">
+                            Select your profession to get tailored sections and recommendations for your portfolio.
+                        </p>
                         <div className="profession-grid">
                             {professions.map((profession) => (
                                 <div
@@ -240,7 +377,7 @@ const PortfolioBuilder = () => {
                                         setStep(2);
                                     }}
                                 >
-                                    <div className="profession-icon">{profession.icon}</div>
+                                    <span className="profession-icon">{profession.icon}</span>
                                     <h3>{profession.name}</h3>
                                     <p>{profession.description}</p>
                                 </div>
@@ -249,15 +386,20 @@ const PortfolioBuilder = () => {
                     </div>
                 )}
 
+                {/* Step 2: Theme Selection */}
                 {step === 2 && (
                     <div className="step-content">
-                        <h2>Choose a Theme</h2>
+                        <h2>Pick Your Style</h2>
+                        <p className="step-description">
+                            Choose a theme that represents your personality and profession. Premium themes require credits.
+                        </p>
                         <div className="theme-grid">
                             {themes.map((theme) => (
                                 <div
                                     key={theme.id}
-                                    className={`theme-card ${formData.theme_id === theme.id ? 'selected' : ''} ${theme.tier === 'premium' && profile?.credits < 1 ? 'locked' : ''
-                                        }`}
+                                    className={`theme-card ${formData.theme_id === theme.id ? 'selected' : ''} ${
+                                        theme.tier === 'premium' && profile?.credits < 1 ? 'locked' : ''
+                                    }`}
                                     onClick={() => {
                                         if (theme.tier === 'premium' && profile?.credits < 1) {
                                             alert('Premium themes require credits. Please purchase credits first.');
@@ -273,133 +415,404 @@ const PortfolioBuilder = () => {
                                             background: `linear-gradient(135deg, ${theme.colors.primary}, ${theme.colors.secondary})`,
                                         }}
                                     ></div>
-                                    <h3>{theme.name}</h3>
-                                    <span className={`theme-badge ${theme.tier}`}>
-                                        {theme.tier === 'premium' ? '⭐ Premium' : '✓ Free'}
-                                    </span>
+                                    <div className="theme-info">
+                                        <h3>{theme.name}</h3>
+                                        <span className={`theme-badge ${theme.tier}`}>
+                                            {theme.tier === 'premium' ? '⭐ Premium' : '✓ Free'}
+                                        </span>
+                                    </div>
                                 </div>
                             ))}
                         </div>
-                        <button onClick={() => setStep(1)} className="btn btn-secondary">
-                            Back
-                        </button>
+                        <div className="step-navigation">
+                            <button onClick={() => setStep(1)} className="btn btn-secondary">
+                                ← Back
+                            </button>
+                        </div>
                     </div>
                 )}
 
+                {/* Step 3: Content Builder */}
                 {step === 3 && (
                     <div className="step-content">
                         <h2>Build Your Portfolio</h2>
+                        <p className="step-description">
+                            Fill in your details to create a stunning, professional portfolio.
+                        </p>
 
+                        {/* Profile Images */}
                         <div className="form-section">
-                            <h3>Profile Images</h3>
+                            <h3>
+                                <span className="section-icon">📸</span>
+                                Profile Images
+                            </h3>
                             <div className="image-uploads">
-                                <div className="image-upload-box">
+                                <div className={`image-upload-box ${formData.images.profile ? 'has-image' : ''}`}>
                                     <label>Profile Picture</label>
                                     <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'profile')} />
+                                    <p className="upload-hint">Recommended: Square image, at least 400x400px</p>
                                     {formData.images.profile && <img src={formData.images.profile} alt="Profile" />}
                                 </div>
-                                <div className="image-upload-box">
-                                    <label>Banner Image</label>
+                                <div className={`image-upload-box ${formData.images.banner ? 'has-image' : ''}`}>
+                                    <label>Banner/Cover Image</label>
                                     <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'banner')} />
+                                    <p className="upload-hint">Recommended: Wide image, 1920x600px</p>
                                     {formData.images.banner && <img src={formData.images.banner} alt="Banner" />}
                                 </div>
                             </div>
                         </div>
 
+                        {/* About Section */}
                         <div className="form-section">
-                            <h3>About</h3>
-                            <textarea
-                                className="input"
-                                rows="5"
-                                placeholder="Tell us about yourself..."
-                                value={formData.content.about}
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        content: { ...formData.content, about: e.target.value },
-                                    })
-                                }
-                            />
-                        </div>
-
-                        <div className="form-section">
-                            <h3>Contact Information</h3>
-                            <div className="contact-grid">
-                                <input
-                                    type="email"
-                                    className="input"
-                                    placeholder="Email"
-                                    value={formData.content.contact.email}
+                            <h3>
+                                <span className="section-icon">👤</span>
+                                About You
+                            </h3>
+                            <div className="form-group">
+                                <label className="label">Tell us about yourself</label>
+                                <textarea
+                                    className="textarea"
+                                    rows="6"
+                                    placeholder="I'm a passionate software developer with 5 years of experience in building web applications..."
+                                    value={formData.content.about}
                                     onChange={(e) =>
                                         setFormData({
                                             ...formData,
-                                            content: {
-                                                ...formData.content,
-                                                contact: { ...formData.content.contact, email: e.target.value },
-                                            },
-                                        })
-                                    }
-                                />
-                                <input
-                                    type="text"
-                                    className="input"
-                                    placeholder="Phone"
-                                    value={formData.content.contact.phone}
-                                    onChange={(e) =>
-                                        setFormData({
-                                            ...formData,
-                                            content: {
-                                                ...formData.content,
-                                                contact: { ...formData.content.contact, phone: e.target.value },
-                                            },
-                                        })
-                                    }
-                                />
-                                <input
-                                    type="text"
-                                    className="input"
-                                    placeholder="LinkedIn URL"
-                                    value={formData.content.contact.linkedin}
-                                    onChange={(e) =>
-                                        setFormData({
-                                            ...formData,
-                                            content: {
-                                                ...formData.content,
-                                                contact: { ...formData.content.contact, linkedin: e.target.value },
-                                            },
-                                        })
-                                    }
-                                />
-                                <input
-                                    type="text"
-                                    className="input"
-                                    placeholder="GitHub URL"
-                                    value={formData.content.contact.github}
-                                    onChange={(e) =>
-                                        setFormData({
-                                            ...formData,
-                                            content: {
-                                                ...formData.content,
-                                                contact: { ...formData.content.contact, github: e.target.value },
-                                            },
+                                            content: { ...formData.content, about: e.target.value },
                                         })
                                     }
                                 />
                             </div>
                         </div>
 
-                        <button onClick={() => setStep(2)} className="btn btn-secondary">
-                            Back
-                        </button>
+                        {/* Skills Section */}
+                        <div className="form-section">
+                            <h3>
+                                <span className="section-icon">⚡</span>
+                                Skills & Expertise
+                            </h3>
+                            <div className="skills-input-container">
+                                <input
+                                    type="text"
+                                    className="input skills-input"
+                                    placeholder="Enter a skill (e.g., JavaScript, React, UI Design)"
+                                    value={currentSkill}
+                                    onChange={(e) => setCurrentSkill(e.target.value)}
+                                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddSkill())}
+                                />
+                                <button onClick={handleAddSkill} className="btn btn-primary">
+                                    Add Skill
+                                </button>
+                            </div>
+                            {formData.content.skills.length > 0 && (
+                                <div className="skills-list">
+                                    {formData.content.skills.map((skill, index) => (
+                                        <div key={index} className="skill-tag">
+                                            <span>{skill}</span>
+                                            <button onClick={() => handleRemoveSkill(index)}>×</button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Projects Section */}
+                        <div className="form-section">
+                            <h3>
+                                <span className="section-icon">💼</span>
+                                Projects & Work
+                            </h3>
+                            <div className="card" style={{ marginBottom: '20px', background: 'var(--gray-50)' }}>
+                                <div className="form-group">
+                                    <label className="label">Project Title</label>
+                                    <input
+                                        type="text"
+                                        className="input"
+                                        placeholder="E-commerce Platform"
+                                        value={currentProject.title}
+                                        onChange={(e) => setCurrentProject({ ...currentProject, title: e.target.value })}
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="label">Description</label>
+                                    <textarea
+                                        className="textarea"
+                                        rows="3"
+                                        placeholder="Built a full-stack e-commerce platform with React and Node.js..."
+                                        value={currentProject.description}
+                                        onChange={(e) => setCurrentProject({ ...currentProject, description: e.target.value })}
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="label">Project Link (optional)</label>
+                                    <input
+                                        type="url"
+                                        className="input"
+                                        placeholder="https://github.com/yourusername/project"
+                                        value={currentProject.link}
+                                        onChange={(e) => setCurrentProject({ ...currentProject, link: e.target.value })}
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="label">Technologies Used (optional)</label>
+                                    <input
+                                        type="text"
+                                        className="input"
+                                        placeholder="React, Node.js, MongoDB, AWS"
+                                        value={currentProject.technologies}
+                                        onChange={(e) => setCurrentProject({ ...currentProject, technologies: e.target.value })}
+                                    />
+                                </div>
+                                <button onClick={handleAddProject} className="btn btn-primary">
+                                    Add Project
+                                </button>
+                            </div>
+
+                            {formData.content.projects.length > 0 && (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                    {formData.content.projects.map((project, index) => (
+                                        <div key={index} className="card">
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                                <div style={{ flex: 1 }}>
+                                                    <h4 style={{ fontSize: '1.25rem', fontWeight: '700', marginBottom: '8px' }}>
+                                                        {project.title}
+                                                    </h4>
+                                                    <p style={{ color: 'var(--gray-600)', marginBottom: '8px' }}>
+                                                        {project.description}
+                                                    </p>
+                                                    {project.technologies && (
+                                                        <p style={{ fontSize: '14px', color: 'var(--primary)' }}>
+                                                            <strong>Tech:</strong> {project.technologies}
+                                                        </p>
+                                                    )}
+                                                    {project.link && (
+                                                        
+                                                            href={project.link}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            style={{ fontSize: '14px', color: 'var(--primary)', marginTop: '8px', display: 'inline-block' }}
+                                                        >
+                                                            View Project →
+                                                        </a>
+                                                    )}
+                                                </div>
+                                                <button
+                                                    onClick={() => handleRemoveProject(index)}
+                                                    className="btn btn-danger btn-small"
+                                                    style={{ marginLeft: '16px' }}
+                                                >
+                                                    Remove
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Experience Section */}
+                        <div className="form-section">
+                            <h3>
+                                <span className="section-icon">💻</span>
+                                Work Experience
+                            </h3>
+                            <div className="card" style={{ marginBottom: '20px', background: 'var(--gray-50)' }}>
+                                <div className="form-group">
+                                    <label className="label">Position/Role</label>
+                                    <input
+                                        type="text"
+                                        className="input"
+                                        placeholder="Senior Software Engineer"
+                                        value={currentExperience.position}
+                                        onChange={(e) => setCurrentExperience({ ...currentExperience, position: e.target.value })}
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="label">Company</label>
+                                    <input
+                                        type="text"
+                                        className="input"
+                                        placeholder="Tech Company Inc."
+                                        value={currentExperience.company}
+                                        onChange={(e) => setCurrentExperience({ ...currentExperience, company: e.target.value })}
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="label">Duration</label>
+                                    <input
+                                        type="text"
+                                        className="input"
+                                        placeholder="Jan 2020 - Present"
+                                        value={currentExperience.duration}
+                                        onChange={(e) => setCurrentExperience({ ...currentExperience, duration: e.target.value })}
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="label">Description</label>
+                                    <textarea
+                                        className="textarea"
+                                        rows="3"
+                                        placeholder="Led a team of 5 developers in building scalable web applications..."
+                                        value={currentExperience.description}
+                                        onChange={(e) => setCurrentExperience({ ...currentExperience, description: e.target.value })}
+                                    />
+                                </div>
+                                <button onClick={handleAddExperience} className="btn btn-primary">
+                                    Add Experience
+                                </button>
+                            </div>
+
+                            {formData.content.experience.length > 0 && (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                    {formData.content.experience.map((exp, index) => (
+                                        <div key={index} className="card">
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                                <div style={{ flex: 1 }}>
+                                                    <h4 style={{ fontSize: '1.25rem', fontWeight: '700', marginBottom: '4px' }}>
+                                                        {exp.position}
+                                                    </h4>
+                                                    <p style={{ color: 'var(--primary)', fontWeight: '600', marginBottom: '4px' }}>
+                                                        {exp.company}
+                                                    </p>
+                                                    <p style={{ fontSize: '14px', color: 'var(--gray-600)', marginBottom: '8px' }}>
+                                                        {exp.duration}
+                                                    </p>
+                                                    <p style={{ color: 'var(--gray-700)' }}>{exp.description}</p>
+                                                </div>
+                                                <button
+                                                    onClick={() => handleRemoveExperience(index)}
+                                                    className="btn btn-danger btn-small"
+                                                    style={{ marginLeft: '16px' }}
+                                                >
+                                                    Remove
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Contact Section */}
+                        <div className="form-section">
+                            <h3>
+                                <span className="section-icon">📧</span>
+                                Contact Information
+                            </h3>
+                            <div className="contact-grid">
+                                <div className="form-group">
+                                    <label className="label">Email *</label>
+                                    <input
+                                        type="email"
+                                        className="input"
+                                        placeholder="your@email.com"
+                                        value={formData.content.contact.email}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                content: {
+                                                    ...formData.content,
+                                                    contact: { ...formData.content.contact, email: e.target.value },
+                                                },
+                                            })
+                                        }
+                                        required
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="label">Phone (optional)</label>
+                                    <input
+                                        type="tel"
+                                        className="input"
+                                        placeholder="+880 1234-567890"
+                                        value={formData.content.contact.phone}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                content: {
+                                                    ...formData.content,
+                                                    contact: { ...formData.content.contact, phone: e.target.value },
+                                                },
+                                            })
+                                        }
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="label">LinkedIn (optional)</label>
+                                    <input
+                                        type="url"
+                                        className="input"
+                                        placeholder="https://linkedin.com/in/yourprofile"
+                                        value={formData.content.contact.linkedin}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                content: {
+                                                    ...formData.content,
+                                                    contact: { ...formData.content.contact, linkedin: e.target.value },
+                                                },
+                                            })
+                                        }
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="label">GitHub (optional)</label>
+                                    <input
+                                        type="url"
+                                        className="input"
+                                        placeholder="https://github.com/yourusername"
+                                        value={formData.content.contact.github}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                content: {
+                                                    ...formData.content,
+                                                    contact: { ...formData.content.contact, github: e.target.value },
+                                                },
+                                            })
+                                        }
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="label">Website (optional)</label>
+                                    <input
+                                        type="url"
+                                        className="input"
+                                        placeholder="https://yourwebsite.com"
+                                        value={formData.content.contact.website}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                content: {
+                                                    ...formData.content,
+                                                    contact: { ...formData.content.contact, website: e.target.value },
+                                                },
+                                            })
+                                        }
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="step-navigation">
+                            <button onClick={() => setStep(2)} className="btn btn-secondary">
+                                ← Back to Themes
+                            </button>
+                            <button onClick={handlePublish} className="btn btn-primary" disabled={loading}>
+                                {loading ? 'Publishing...' : `Publish Portfolio (${profile?.credits || 0} credits)`}
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>
 
+            {/* Credit Modal */}
             {showCreditModal && (
                 <div className="modal-overlay" onClick={() => setShowCreditModal(false)}>
                     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-icon">💳</div>
                         <h2>Insufficient Credits</h2>
-                        <p>You need at least 1 credit to publish a portfolio.</p>
+                        <p>You need at least 1 credit to publish a portfolio. Purchase credits to continue.</p>
                         <div className="modal-actions">
                             <button onClick={() => navigate('/credits')} className="btn btn-primary">
                                 Buy Credits
