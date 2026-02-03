@@ -14,19 +14,13 @@ const PortfolioBuilder = () => {
     const [professions, setProfessions] = useState([]);
     const [themes, setThemes] = useState([]);
     const [showCreditModal, setShowCreditModal] = useState(false);
-
-    // Skills state
     const [currentSkill, setCurrentSkill] = useState('');
-
-    // Projects state
     const [currentProject, setCurrentProject] = useState({
         title: '',
         description: '',
         link: '',
         technologies: ''
     });
-
-    // Experience state
     const [currentExperience, setCurrentExperience] = useState({
         position: '',
         company: '',
@@ -86,7 +80,7 @@ const PortfolioBuilder = () => {
                 images: data.images || formData.images,
             });
         }
-    }, [portfolioId]);
+    }, [portfolioId, formData.content, formData.images]);
 
     useEffect(() => {
         fetchProfessions();
@@ -103,14 +97,13 @@ const PortfolioBuilder = () => {
                     .single();
 
                 if (data) {
-                    navigate(`/edit/${data.id}`, { replace: true });
+                    navigate('/edit/' + data.id, { replace: true });
                 }
             };
             checkExisting();
         }
     }, [portfolioId, fetchPortfolio, user, navigate]);
 
-    // Image Upload
     const handleImageUpload = async (e, type) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -132,7 +125,6 @@ const PortfolioBuilder = () => {
         }
     };
 
-    // Skills Management
     const handleAddSkill = () => {
         if (!currentSkill.trim()) return;
         
@@ -156,7 +148,6 @@ const PortfolioBuilder = () => {
         });
     };
 
-    // Projects Management
     const handleAddProject = () => {
         if (!currentProject.title.trim()) {
             alert('Please enter a project title');
@@ -189,7 +180,6 @@ const PortfolioBuilder = () => {
         });
     };
 
-    // Experience Management
     const handleAddExperience = () => {
         if (!currentExperience.position.trim() || !currentExperience.company.trim()) {
             alert('Please enter position and company');
@@ -222,7 +212,6 @@ const PortfolioBuilder = () => {
         });
     };
 
-    // Save & Publish
     const handleSaveDraft = async () => {
         setLoading(true);
         try {
@@ -286,10 +275,19 @@ const PortfolioBuilder = () => {
             let portfolioIdToPublish = portfolioId;
 
             if (portfolioId) {
-                const { error } = await supabase.from('portfolios').update(portfolioData).eq('id', portfolioId);
+                const { error } = await supabase
+                    .from('portfolios')
+                    .update(portfolioData)
+                    .eq('id', portfolioId);
+                
                 if (error) throw error;
             } else {
-                const { data, error } = await supabase.from('portfolios').insert([portfolioData]).select().single();
+                const { data, error } = await supabase
+                    .from('portfolios')
+                    .insert([portfolioData])
+                    .select()
+                    .single();
+                
                 if (error) throw error;
                 if (data) portfolioIdToPublish = data.id;
             }
@@ -298,12 +296,12 @@ const PortfolioBuilder = () => {
                 throw new Error('Failed to create portfolio ID');
             }
 
-            const { error } = await supabase.rpc('publish_portfolio_safe', {
+            const { error: publishError } = await supabase.rpc('publish_portfolio_safe', {
                 p_portfolio_id: portfolioIdToPublish,
                 p_user_id: user.id,
             });
 
-            if (error) throw error;
+            if (publishError) throw publishError;
 
             refreshProfile();
             alert('Portfolio published successfully!');
@@ -318,7 +316,6 @@ const PortfolioBuilder = () => {
 
     return (
         <div className="portfolio-builder">
-            {/* Header */}
             <div className="builder-header">
                 <div className="container">
                     <div className="builder-title">
@@ -342,25 +339,22 @@ const PortfolioBuilder = () => {
                 </div>
             </div>
 
-            {/* Content */}
             <div className="builder-content">
-                {/* Progress Steps */}
                 <div className="steps-indicator">
-                    <div className={`step-item ${step >= 1 ? 'active' : ''} ${step > 1 ? 'completed' : ''}`}>
+                    <div className={'step-item ' + (step >= 1 ? 'active' : '') + ' ' + (step > 1 ? 'completed' : '')}>
                         <div className="step-number">{step > 1 ? '✓' : '1'}</div>
                         <span>Profession</span>
                     </div>
-                    <div className={`step-item ${step >= 2 ? 'active' : ''} ${step > 2 ? 'completed' : ''}`}>
+                    <div className={'step-item ' + (step >= 2 ? 'active' : '') + ' ' + (step > 2 ? 'completed' : '')}>
                         <div className="step-number">{step > 2 ? '✓' : '2'}</div>
                         <span>Theme</span>
                     </div>
-                    <div className={`step-item ${step >= 3 ? 'active' : ''}`}>
+                    <div className={'step-item ' + (step >= 3 ? 'active' : '')}>
                         <div className="step-number">3</div>
                         <span>Content</span>
                     </div>
                 </div>
 
-                {/* Step 1: Profession Selection */}
                 {step === 1 && (
                     <div className="step-content">
                         <h2>Choose Your Profession</h2>
@@ -371,7 +365,7 @@ const PortfolioBuilder = () => {
                             {professions.map((profession) => (
                                 <div
                                     key={profession.id}
-                                    className={`profession-card ${formData.profession_id === profession.id ? 'selected' : ''}`}
+                                    className={'profession-card ' + (formData.profession_id === profession.id ? 'selected' : '')}
                                     onClick={() => {
                                         setFormData({ ...formData, profession_id: profession.id });
                                         setStep(2);
@@ -386,7 +380,6 @@ const PortfolioBuilder = () => {
                     </div>
                 )}
 
-                {/* Step 2: Theme Selection */}
                 {step === 2 && (
                     <div className="step-content">
                         <h2>Pick Your Style</h2>
@@ -394,35 +387,36 @@ const PortfolioBuilder = () => {
                             Choose a theme that represents your personality and profession. Premium themes require credits.
                         </p>
                         <div className="theme-grid">
-                            {themes.map((theme) => (
-                                <div
-                                    key={theme.id}
-                                    className={`theme-card ${formData.theme_id === theme.id ? 'selected' : ''} ${
-                                        theme.tier === 'premium' && profile?.credits < 1 ? 'locked' : ''
-                                    }`}
-                                    onClick={() => {
-                                        if (theme.tier === 'premium' && profile?.credits < 1) {
-                                            alert('Premium themes require credits. Please purchase credits first.');
-                                            return;
-                                        }
-                                        setFormData({ ...formData, theme_id: theme.id });
-                                        setStep(3);
-                                    }}
-                                >
+                            {themes.map((theme) => {
+                                const isLocked = theme.tier === 'premium' && profile?.credits < 1;
+                                return (
                                     <div
-                                        className="theme-preview"
-                                        style={{
-                                            background: `linear-gradient(135deg, ${theme.colors.primary}, ${theme.colors.secondary})`,
+                                        key={theme.id}
+                                        className={'theme-card ' + (formData.theme_id === theme.id ? 'selected ' : '') + (isLocked ? 'locked' : '')}
+                                        onClick={() => {
+                                            if (isLocked) {
+                                                alert('Premium themes require credits. Please purchase credits first.');
+                                                return;
+                                            }
+                                            setFormData({ ...formData, theme_id: theme.id });
+                                            setStep(3);
                                         }}
-                                    ></div>
-                                    <div className="theme-info">
-                                        <h3>{theme.name}</h3>
-                                        <span className={`theme-badge ${theme.tier}`}>
-                                            {theme.tier === 'premium' ? '⭐ Premium' : '✓ Free'}
-                                        </span>
+                                    >
+                                        <div
+                                            className="theme-preview"
+                                            style={{
+                                                background: 'linear-gradient(135deg, ' + theme.colors.primary + ', ' + theme.colors.secondary + ')',
+                                            }}
+                                        ></div>
+                                        <div className="theme-info">
+                                            <h3>{theme.name}</h3>
+                                            <span className={'theme-badge ' + theme.tier}>
+                                                {theme.tier === 'premium' ? '⭐ Premium' : '✓ Free'}
+                                            </span>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                         <div className="step-navigation">
                             <button onClick={() => setStep(1)} className="btn btn-secondary">
@@ -432,7 +426,6 @@ const PortfolioBuilder = () => {
                     </div>
                 )}
 
-                {/* Step 3: Content Builder */}
                 {step === 3 && (
                     <div className="step-content">
                         <h2>Build Your Portfolio</h2>
@@ -440,20 +433,19 @@ const PortfolioBuilder = () => {
                             Fill in your details to create a stunning, professional portfolio.
                         </p>
 
-                        {/* Profile Images */}
                         <div className="form-section">
                             <h3>
                                 <span className="section-icon">📸</span>
                                 Profile Images
                             </h3>
                             <div className="image-uploads">
-                                <div className={`image-upload-box ${formData.images.profile ? 'has-image' : ''}`}>
+                                <div className={'image-upload-box ' + (formData.images.profile ? 'has-image' : '')}>
                                     <label>Profile Picture</label>
                                     <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'profile')} />
                                     <p className="upload-hint">Recommended: Square image, at least 400x400px</p>
                                     {formData.images.profile && <img src={formData.images.profile} alt="Profile" />}
                                 </div>
-                                <div className={`image-upload-box ${formData.images.banner ? 'has-image' : ''}`}>
+                                <div className={'image-upload-box ' + (formData.images.banner ? 'has-image' : '')}>
                                     <label>Banner/Cover Image</label>
                                     <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'banner')} />
                                     <p className="upload-hint">Recommended: Wide image, 1920x600px</p>
@@ -462,7 +454,6 @@ const PortfolioBuilder = () => {
                             </div>
                         </div>
 
-                        {/* About Section */}
                         <div className="form-section">
                             <h3>
                                 <span className="section-icon">👤</span>
@@ -485,7 +476,6 @@ const PortfolioBuilder = () => {
                             </div>
                         </div>
 
-                        {/* Skills Section */}
                         <div className="form-section">
                             <h3>
                                 <span className="section-icon">⚡</span>
@@ -498,7 +488,12 @@ const PortfolioBuilder = () => {
                                     placeholder="Enter a skill (e.g., JavaScript, React, UI Design)"
                                     value={currentSkill}
                                     onChange={(e) => setCurrentSkill(e.target.value)}
-                                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddSkill())}
+                                    onKeyPress={(e) => {
+                                        if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            handleAddSkill();
+                                        }
+                                    }}
                                 />
                                 <button onClick={handleAddSkill} className="btn btn-primary">
                                     Add Skill
@@ -516,7 +511,6 @@ const PortfolioBuilder = () => {
                             )}
                         </div>
 
-                        {/* Projects Section */}
                         <div className="form-section">
                             <h3>
                                 <span className="section-icon">💼</span>
@@ -610,7 +604,6 @@ const PortfolioBuilder = () => {
                             )}
                         </div>
 
-                        {/* Experience Section */}
                         <div className="form-section">
                             <h3>
                                 <span className="section-icon">💻</span>
@@ -693,7 +686,6 @@ const PortfolioBuilder = () => {
                             )}
                         </div>
 
-                        {/* Contact Section */}
                         <div className="form-section">
                             <h3>
                                 <span className="section-icon">📧</span>
@@ -799,14 +791,13 @@ const PortfolioBuilder = () => {
                                 ← Back to Themes
                             </button>
                             <button onClick={handlePublish} className="btn btn-primary" disabled={loading}>
-                                {loading ? 'Publishing...' : `Publish Portfolio (${profile?.credits || 0} credits)`}
+                                {loading ? 'Publishing...' : 'Publish Portfolio (' + (profile?.credits || 0) + ' credits)'}
                             </button>
                         </div>
                     </div>
                 )}
             </div>
 
-            {/* Credit Modal */}
             {showCreditModal && (
                 <div className="modal-overlay" onClick={() => setShowCreditModal(false)}>
                     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
