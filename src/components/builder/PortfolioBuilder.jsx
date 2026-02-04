@@ -811,7 +811,7 @@ const PortfolioBuilder = () => {
                                 ← Back to Themes
                             </button>
                             <button onClick={handlePublish} className="btn btn-primary" disabled={loading}>
-                                {loading ? 'Publishing...' : `Publish Portfolio (${profile?.credits || 0} credits)`}
+                                {loading ? 'Publishing...' : 'Publish Portfolio (' + (profile?.credits || 0) + ' credits)'}
                             </button>
                         </div>
                     </div>
