@@ -16,13 +16,13 @@ const AdminPanel = () => {
     useEffect(() => {
         console.log('Admin Panel - Current user:', user);
         console.log('Admin Panel - Current profile:', profile);
-        
+    
         if (activeTab === 'payments') {
             fetchPaymentRequests();
         } else {
             fetchUsers();
         }
-    }, [activeTab, user, profile]);
+    }, [activeTab, user, profile]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const fetchPaymentRequests = async () => {
         setLoading(true);

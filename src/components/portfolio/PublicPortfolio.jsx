@@ -18,7 +18,7 @@ const PublicPortfolio = () => {
         
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
-    }, [username]);
+    }, [username]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const fetchPortfolio = async () => {
         try {
