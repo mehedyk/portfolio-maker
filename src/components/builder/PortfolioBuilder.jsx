@@ -97,7 +97,7 @@ const PortfolioBuilder = () => {
                     .single();
 
                 if (data) {
-                    navigate('/edit/' + data.id, { replace: true });
+                    navigate(`/edit/${data.id}`, { replace: true });
                 }
             };
             checkExisting();
@@ -314,6 +314,28 @@ const PortfolioBuilder = () => {
         }
     };
 
+    const getProfessionClassName = (professionId) => {
+        return 'profession-card' + (formData.profession_id === professionId ? ' selected' : '');
+    };
+
+    const getThemeClassName = (themeId, isLocked) => {
+        let className = 'theme-card';
+        if (formData.theme_id === themeId) className += ' selected';
+        if (isLocked) className += ' locked';
+        return className;
+    };
+
+    const getStepClassName = (stepNumber) => {
+        let className = 'step-item';
+        if (step >= stepNumber) className += ' active';
+        if (step > stepNumber) className += ' completed';
+        return className;
+    };
+
+    const getImageBoxClassName = (hasImage) => {
+        return 'image-upload-box' + (hasImage ? ' has-image' : '');
+    };
+
     return (
         <div className="portfolio-builder">
             <div className="builder-header">
@@ -341,15 +363,15 @@ const PortfolioBuilder = () => {
 
             <div className="builder-content">
                 <div className="steps-indicator">
-                    <div className={'step-item ' + (step >= 1 ? 'active' : '') + ' ' + (step > 1 ? 'completed' : '')}>
+                    <div className={getStepClassName(1)}>
                         <div className="step-number">{step > 1 ? '✓' : '1'}</div>
                         <span>Profession</span>
                     </div>
-                    <div className={'step-item ' + (step >= 2 ? 'active' : '') + ' ' + (step > 2 ? 'completed' : '')}>
+                    <div className={getStepClassName(2)}>
                         <div className="step-number">{step > 2 ? '✓' : '2'}</div>
                         <span>Theme</span>
                     </div>
-                    <div className={'step-item ' + (step >= 3 ? 'active' : '')}>
+                    <div className={getStepClassName(3)}>
                         <div className="step-number">3</div>
                         <span>Content</span>
                     </div>
@@ -365,7 +387,7 @@ const PortfolioBuilder = () => {
                             {professions.map((profession) => (
                                 <div
                                     key={profession.id}
-                                    className={'profession-card ' + (formData.profession_id === profession.id ? 'selected' : '')}
+                                    className={getProfessionClassName(profession.id)}
                                     onClick={() => {
                                         setFormData({ ...formData, profession_id: profession.id });
                                         setStep(2);
@@ -389,10 +411,13 @@ const PortfolioBuilder = () => {
                         <div className="theme-grid">
                             {themes.map((theme) => {
                                 const isLocked = theme.tier === 'premium' && profile?.credits < 1;
+                                const gradientStyle = {
+                                    background: `linear-gradient(135deg, ${theme.colors.primary}, ${theme.colors.secondary})`
+                                };
                                 return (
                                     <div
                                         key={theme.id}
-                                        className={'theme-card ' + (formData.theme_id === theme.id ? 'selected ' : '') + (isLocked ? 'locked' : '')}
+                                        className={getThemeClassName(theme.id, isLocked)}
                                         onClick={() => {
                                             if (isLocked) {
                                                 alert('Premium themes require credits. Please purchase credits first.');
@@ -402,15 +427,10 @@ const PortfolioBuilder = () => {
                                             setStep(3);
                                         }}
                                     >
-                                        <div
-                                            className="theme-preview"
-                                            style={{
-                                                background: 'linear-gradient(135deg, ' + theme.colors.primary + ', ' + theme.colors.secondary + ')',
-                                            }}
-                                        ></div>
+                                        <div className="theme-preview" style={gradientStyle}></div>
                                         <div className="theme-info">
                                             <h3>{theme.name}</h3>
-                                            <span className={'theme-badge ' + theme.tier}>
+                                            <span className={`theme-badge ${theme.tier}`}>
                                                 {theme.tier === 'premium' ? '⭐ Premium' : '✓ Free'}
                                             </span>
                                         </div>
@@ -439,13 +459,13 @@ const PortfolioBuilder = () => {
                                 Profile Images
                             </h3>
                             <div className="image-uploads">
-                                <div className={'image-upload-box ' + (formData.images.profile ? 'has-image' : '')}>
+                                <div className={getImageBoxClassName(formData.images.profile)}>
                                     <label>Profile Picture</label>
                                     <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'profile')} />
                                     <p className="upload-hint">Recommended: Square image, at least 400x400px</p>
                                     {formData.images.profile && <img src={formData.images.profile} alt="Profile" />}
                                 </div>
-                                <div className={'image-upload-box ' + (formData.images.banner ? 'has-image' : '')}>
+                                <div className={getImageBoxClassName(formData.images.banner)}>
                                     <label>Banner/Cover Image</label>
                                     <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'banner')} />
                                     <p className="upload-hint">Recommended: Wide image, 1920x600px</p>
@@ -791,7 +811,7 @@ const PortfolioBuilder = () => {
                                 ← Back to Themes
                             </button>
                             <button onClick={handlePublish} className="btn btn-primary" disabled={loading}>
-                                {loading ? 'Publishing...' : 'Publish Portfolio (' + (profile?.credits || 0) + ' credits)'}
+                                {loading ? 'Publishing...' : `Publish Portfolio (${profile?.credits || 0} credits)`}
                             </button>
                         </div>
                     </div>
