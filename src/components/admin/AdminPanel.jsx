@@ -53,12 +53,13 @@ const AdminPanel = () => {
                 return;
             }
             
-            // Now fetch payment requests
+            // FIXED: Specify which foreign key relationship to use: user_id (not processed_by)
+            // The "!" syntax tells Supabase exactly which relationship to follow
             const { data, error } = await supabase
                 .from('payment_requests')
                 .select(`
                     *,
-                    user_profiles (
+                    user_profiles!user_id (
                         id,
                         email,
                         full_name,
