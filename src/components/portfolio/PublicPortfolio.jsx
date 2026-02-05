@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '../../services/supabase';
+import { ThemeSwitcher } from '../ThemeSwitcher';
+import { useThemeStore, applyTheme } from '../../stores/themeStore';
 import './PublicPortfolio.css';
 
 const PublicPortfolio = () => {
@@ -9,6 +11,12 @@ const PublicPortfolio = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [showScrollTop, setShowScrollTop] = useState(false);
+
+    const { theme } = useThemeStore();
+
+    useEffect(() => {
+        applyTheme(theme);
+    }, [theme]);
 
     const fetchPortfolio = useCallback(async () => {
         console.log('Fetching portfolio for username:', username);
@@ -129,7 +137,7 @@ const PublicPortfolio = () => {
         );
     }
 
-    const theme = portfolio.themes || { 
+    const themeData = portfolio.themes || { 
         colors: { 
             primary: '#0ea5e9', 
             secondary: '#06b6d4', 
@@ -144,10 +152,10 @@ const PublicPortfolio = () => {
         <div
             className="public-portfolio"
             style={{
-                '--primary-color': theme.colors.primary,
-                '--secondary-color': theme.colors.secondary,
-                '--background-color': theme.colors.background,
-                '--text-color': theme.colors.text,
+                '--primary-color': themeData.colors.primary,
+                '--secondary-color': themeData.colors.secondary,
+                '--background-color': themeData.colors.background,
+                '--text-color': themeData.colors.text,
             }}
         >
             {/* Navigation */}
@@ -399,6 +407,8 @@ const PublicPortfolio = () => {
                     </div>
                 </div>
             </footer>
+
+            <ThemeSwitcher />
 
             {/* Scroll to Top Button */}
             <div 
