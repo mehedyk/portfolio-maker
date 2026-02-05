@@ -137,27 +137,11 @@ const PublicPortfolio = () => {
         );
     }
 
-    const themeData = portfolio.themes || { 
-        colors: { 
-            primary: '#0ea5e9', 
-            secondary: '#06b6d4', 
-            background: '#ffffff', 
-            text: '#0f172a' 
-        } 
-    };
     const content = portfolio.content || {};
     const images = portfolio.images || {};
 
     return (
-        <div
-            className="public-portfolio"
-            style={{
-                '--primary-color': themeData.colors.primary,
-                '--secondary-color': themeData.colors.secondary,
-                '--background-color': themeData.colors.background,
-                '--text-color': themeData.colors.text,
-            }}
-        >
+        <div className="public-portfolio">
             {/* Navigation */}
             <nav className="portfolio-nav">
                 <div className="container">
@@ -180,12 +164,7 @@ const PublicPortfolio = () => {
                 </div>
             </nav>
 
-            {/* Banner */}
-            {images.banner && (
-                <div className="portfolio-banner" style={{ backgroundImage: 'url(' + images.banner + ')' }}></div>
-            )}
-
-            {/* Header */}
+            {/* Header - No Banner, Clean Design */}
             <header className="portfolio-header">
                 <div className="container">
                     {images.profile && (
@@ -346,7 +325,7 @@ const PublicPortfolio = () => {
                 <section id="contact" className="portfolio-section contact-section">
                     <div className="container">
                         <div className="section-header">
-                            <div className="section-badge" style={{ background: 'rgba(255,255,255,0.2)', color: 'white' }}>
+                            <div className="section-badge">
                                 <span>📬</span>
                                 <span>Get In Touch</span>
                             </div>
