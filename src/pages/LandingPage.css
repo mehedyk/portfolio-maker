@@ -509,6 +509,12 @@
   text-align: left;
 }
 
+/* Fix for featured card text visibility (white bg needs dark text) */
+.pricing-card.featured .pricing-features li {
+  color: var(--gray-600);
+  border-bottom-color: var(--gray-200);
+}
+
 .pricing-features li {
   padding: 12px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -523,7 +529,9 @@
 /* CTA Section */
 .cta-section {
   padding: 120px 24px;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  background: var(--primary);
+  /* Fallback */
+  background: var(--gradient-primary);
   color: white;
   text-align: center;
   position: relative;
@@ -720,4 +728,9 @@
   .nav-actions {
     flex-wrap: wrap;
   }
+}
+
+/* Utility */
+.text-primary {
+  color: var(--primary) !important;
 }
