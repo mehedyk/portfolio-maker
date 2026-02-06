@@ -4,8 +4,12 @@ import { supabase } from '../../services/supabase';
 import { ThemeSwitcher } from '../ThemeSwitcher';
 import { useThemeStore, applyTheme } from '../../stores/themeStore';
 import './PublicPortfolio.css';
+import MehedyLight from '../templates/MehedyLight';
+import MehedyDark from '../templates/MehedyDark';
 
 const PublicPortfolio = () => {
+    const { username } = useParams();
+    const [portfolio, setPortfolio] = useState(null);
     const { username } = useParams();
     const [portfolio, setPortfolio] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -397,6 +401,32 @@ const PublicPortfolio = () => {
                 ↑
             </div>
         </div>
+        const renderTemplate = () => {
+        const templateName = portfolio?.themes?.template_component;
+        
+        const templateProps = {
+            portfolio: portfolio,
+            content: portfolio.content,
+            images: portfolio.images,
+            specialty_info: portfolio.specialty_info
+        };
+
+        switch(templateName) {
+            case 'MehedyLight':
+                return <MehedyLight {...templateProps} />;
+            case 'MehedyDark':
+                return <MehedyDark {...templateProps} />;
+            default:
+                return <MehedyLight {...templateProps} />; // Default fallback
+        }
+    };
+
+    return (
+        <div className="public-portfolio">
+            {renderTemplate()}
+        </div>
+    );
+};
     );
 };
 

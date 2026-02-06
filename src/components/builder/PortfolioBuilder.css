@@ -586,3 +586,213 @@
         grid-template-columns: 1fr;
     }
 }
+
+.profession-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 24px;
+    background: rgba(14, 165, 233, 0.05);
+    border-radius: var(--radius-lg);
+    margin-bottom: 32px;
+    border: 2px solid rgba(14, 165, 233, 0.2);
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    color: var(--primary);
+    font-size: 15px;
+}
+
+.profession-breadcrumb span {
+    display: inline-flex;
+    align-items: center;
+}
+
+/* ============================================================================
+   SPECIALTY INPUT SECTION
+   ============================================================================ */
+
+.specialty-input-section {
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.05) 0%, rgba(6, 182, 212, 0.05) 100%);
+    border-radius: var(--radius-xl);
+    padding: 40px;
+    margin-top: 32px;
+    border: 2px solid rgba(14, 165, 233, 0.2);
+}
+
+.specialty-input-section h4 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 24px;
+    color: var(--gray-900);
+    font-family: 'Space Grotesk', sans-serif;
+}
+
+/* ============================================================================
+   UPDATED IMAGE UPLOAD (Single Profile Image Only)
+   ============================================================================ */
+
+.image-uploads {
+    display: grid;
+    grid-template-columns: 1fr; /* Only one column now - no banner */
+    gap: 24px;
+    max-width: 400px; /* Center it */
+    margin: 0 auto;
+}
+
+.image-upload-box {
+    border: 2px dashed var(--gray-300);
+    border-radius: var(--radius-lg);
+    padding: 32px 24px;
+    text-align: center;
+    transition: var(--transition);
+    background: var(--gray-50);
+}
+
+.image-upload-box:hover {
+    border-color: var(--primary);
+    background: white;
+}
+
+.image-upload-box.has-image {
+    border-style: solid;
+    border-color: var(--primary);
+    background: white;
+}
+
+.image-upload-box label {
+    display: block;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--gray-900);
+    font-size: 15px;
+}
+
+.image-upload-box input[type="file"] {
+    margin-bottom: 16px;
+}
+
+.image-upload-box img {
+    max-width: 100%;
+    max-height: 300px;
+    border-radius: 50%; /* Circular preview for profile pic */
+    margin-top: 16px;
+    box-shadow: var(--shadow-md);
+    border: 4px solid var(--primary);
+}
+
+.upload-hint {
+    font-size: 13px;
+    color: var(--gray-500);
+    margin-top: 8px;
+    line-height: 1.5;
+}
+
+.upload-hint strong {
+    color: var(--primary);
+}
+
+/* ============================================================================
+   DOWNLOAD CV BUTTON (Will be added to public portfolio later)
+   ============================================================================ */
+
+.download-cv-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 28px;
+    background: var(--gradient-primary);
+    color: white;
+    border-radius: var(--radius);
+    font-weight: 700;
+    text-decoration: none;
+    transition: var(--transition);
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+    font-family: 'Space Grotesk', sans-serif;
+}
+
+.download-cv-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(14, 165, 233, 0.4);
+}
+
+.download-cv-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* ============================================================================
+   BOOKING SECTION (For Doctors)
+   ============================================================================ */
+
+.booking-section {
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.05) 0%, rgba(6, 182, 212, 0.05) 100%);
+    border-radius: var(--radius-xl);
+    padding: 48px 40px;
+    text-align: center;
+    border: 2px solid rgba(14, 165, 233, 0.2);
+}
+
+.booking-section h3 {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 16px;
+    color: var(--gray-900);
+    font-family: 'Space Grotesk', sans-serif;
+}
+
+.booking-section p {
+    font-size: 1.1rem;
+    color: var(--gray-600);
+    margin-bottom: 32px;
+}
+
+.book-session-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 36px;
+    background: var(--gradient-primary);
+    color: white;
+    border-radius: var(--radius-lg);
+    font-weight: 700;
+    font-size: 17px;
+    text-decoration: none;
+    transition: var(--transition);
+    box-shadow: 0 4px 14px rgba(14, 165, 233, 0.39);
+    font-family: 'Space Grotesk', sans-serif;
+    border: none;
+    cursor: pointer;
+}
+
+.book-session-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(14, 165, 233, 0.45);
+}
+
+/* ============================================================================
+   RESPONSIVE UPDATES
+   ============================================================================ */
+
+@media (max-width: 768px) {
+    .profession-breadcrumb {
+        font-size: 13px;
+        padding: 12px 16px;
+        flex-wrap: wrap;
+    }
+    
+    .specialty-input-section {
+        padding: 24px 20px;
+    }
+    
+    .image-uploads {
+        max-width: 100%;
+    }
+    
+    .booking-section {
+        padding: 32px 24px;
+    }
+    
+    .booking-section h3 {
+        font-size: 1.5rem;
+    }
+}

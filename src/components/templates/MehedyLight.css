@@ -1,0 +1,721 @@
+/**
+ * ============================================================================
+ * MEHEDY LIGHT TEMPLATE - STYLES
+ * Clean, minimalist design based on mehedy.netlify.app
+ * ============================================================================
+ */
+
+.mehedy-light-template {
+    min-height: 100vh;
+    background: #FFFFFF;
+    color: #000000;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+    line-height: 1.6;
+}
+
+/* ============================================================================
+   NAVIGATION
+   ============================================================================ */
+
+.ml-nav {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid #E5E5E5;
+    padding: 16px 0;
+}
+
+.ml-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+.ml-nav .ml-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ml-nav-brand {
+    font-size: 18px;
+    font-weight: 600;
+    color: #000000;
+    letter-spacing: -0.02em;
+}
+
+.ml-nav-links {
+    display: flex;
+    gap: 32px;
+}
+
+.ml-nav-links a {
+    color: #666666;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 0.2s ease;
+    position: relative;
+}
+
+.ml-nav-links a:hover {
+    color: #000000;
+}
+
+.ml-nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: #000000;
+    transition: width 0.3s ease;
+}
+
+.ml-nav-links a:hover::after {
+    width: 100%;
+}
+
+/* ============================================================================
+   HERO SECTION
+   ============================================================================ */
+
+.ml-hero {
+    padding: 120px 24px;
+    text-align: center;
+}
+
+.ml-hero-content {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.ml-profile-wrapper {
+    margin-bottom: 32px;
+}
+
+.ml-profile-image {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #000000;
+}
+
+.ml-hero-name {
+    font-size: 48px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    letter-spacing: -0.03em;
+    color: #000000;
+}
+
+.ml-hero-title {
+    font-size: 18px;
+    color: #666666;
+    margin-bottom: 32px;
+    font-weight: 400;
+}
+
+/* Social Links */
+.ml-social-links {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    margin-bottom: 48px;
+}
+
+.ml-social-link {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid #E5E5E5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: #000000;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.ml-social-link:hover {
+    background: #000000;
+    color: #FFFFFF;
+    border-color: #000000;
+}
+
+/* Stats */
+.ml-stats {
+    display: flex;
+    gap: 48px;
+    justify-content: center;
+    margin-top: 48px;
+}
+
+.ml-stat-item {
+    text-align: center;
+}
+
+.ml-stat-number {
+    font-size: 36px;
+    font-weight: 700;
+    color: #000000;
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+}
+
+.ml-stat-label {
+    font-size: 13px;
+    color: #666666;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* ============================================================================
+   SECTIONS
+   ============================================================================ */
+
+.ml-section {
+    padding: 80px 24px;
+}
+
+.ml-section-alt {
+    background: #FAFAFA;
+}
+
+.ml-section-title {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 48px;
+    color: #000000;
+}
+
+/* About Section */
+.ml-about-content {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.ml-about-text {
+    font-size: 16px;
+    line-height: 1.8;
+    color: #333333;
+    text-align: center;
+}
+
+/* ============================================================================
+   TIMELINE (Journey)
+   ============================================================================ */
+
+.ml-timeline {
+    max-width: 800px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.ml-timeline::before {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #E5E5E5;
+}
+
+.ml-timeline-item {
+    position: relative;
+    padding-left: 60px;
+    margin-bottom: 48px;
+}
+
+.ml-timeline-dot {
+    position: absolute;
+    left: 12px;
+    top: 4px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #000000;
+    border: 4px solid #FFFFFF;
+    box-shadow: 0 0 0 2px #E5E5E5;
+}
+
+.ml-timeline-year {
+    font-size: 12px;
+    color: #999999;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+}
+
+.ml-timeline-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #000000;
+    margin-bottom: 4px;
+}
+
+.ml-timeline-company {
+    font-size: 16px;
+    color: #666666;
+    margin-bottom: 12px;
+}
+
+.ml-timeline-desc {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #666666;
+}
+
+/* ============================================================================
+   SKILLS
+   ============================================================================ */
+
+.ml-skills-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.ml-skill-badge {
+    padding: 10px 20px;
+    border: 1px solid #E5E5E5;
+    border-radius: 24px;
+    font-size: 14px;
+    color: #333333;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.ml-skill-badge:hover {
+    background: #000000;
+    color: #FFFFFF;
+    border-color: #000000;
+}
+
+/* ============================================================================
+   PROJECTS
+   ============================================================================ */
+
+.ml-projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 24px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.ml-project-card {
+    padding: 32px;
+    border: 1px solid #E5E5E5;
+    border-radius: 12px;
+    background: #FFFFFF;
+    transition: all 0.2s ease;
+}
+
+.ml-project-card:hover {
+    border-color: #000000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.ml-project-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.ml-project-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #000000;
+    flex: 1;
+}
+
+.ml-project-link {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid #E5E5E5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: #000000;
+    font-size: 18px;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.ml-project-link:hover {
+    background: #000000;
+    color: #FFFFFF;
+    border-color: #000000;
+}
+
+.ml-project-desc {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #666666;
+    margin-bottom: 16px;
+}
+
+.ml-project-tech {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.ml-tech-tag {
+    padding: 4px 12px;
+    background: #F5F5F5;
+    border-radius: 12px;
+    font-size: 12px;
+    color: #666666;
+}
+
+/* ============================================================================
+   SERVICES / BOOKING
+   ============================================================================ */
+
+.ml-services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.ml-service-card {
+    padding: 32px;
+    border: 1px solid #E5E5E5;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.ml-service-card h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #000000;
+}
+
+.ml-service-card p {
+    font-size: 14px;
+    color: #666666;
+}
+
+.ml-booking-card {
+    max-width: 600px;
+    margin: 0 auto 40px;
+    padding: 40px;
+    border: 1px solid #E5E5E5;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.ml-booking-card h3 {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #000000;
+}
+
+.ml-specialty {
+    font-size: 14px;
+    color: #666666;
+    margin-bottom: 24px;
+}
+
+.ml-book-btn {
+    display: inline-block;
+    padding: 14px 32px;
+    background: #000000;
+    color: #FFFFFF;
+    text-decoration: none;
+    border-radius: 24px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.ml-book-btn:hover {
+    background: #333333;
+    transform: translateY(-2px);
+}
+
+/* ============================================================================
+   EDUCATION
+   ============================================================================ */
+
+.ml-education-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.ml-education-card {
+    padding: 32px;
+    border: 1px solid #E5E5E5;
+    border-radius: 12px;
+}
+
+.ml-edu-year {
+    font-size: 12px;
+    color: #999999;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 12px;
+}
+
+.ml-edu-degree {
+    font-size: 18px;
+    font-weight: 600;
+    color: #000000;
+    margin-bottom: 8px;
+}
+
+.ml-edu-institution {
+    font-size: 15px;
+    color: #666666;
+    margin-bottom: 12px;
+}
+
+.ml-edu-desc {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #666666;
+}
+
+/* ============================================================================
+   CONTACT
+   ============================================================================ */
+
+.ml-contact-section {
+    background: #FAFAFA;
+}
+
+.ml-contact-content {
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.ml-contact-intro {
+    font-size: 16px;
+    color: #666666;
+    margin-bottom: 40px;
+}
+
+.ml-contact-methods {
+    margin-bottom: 40px;
+}
+
+.ml-contact-method {
+    padding: 20px;
+    margin-bottom: 16px;
+    border: 1px solid #E5E5E5;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ml-contact-label {
+    font-size: 13px;
+    color: #999999;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.ml-contact-value {
+    font-size: 15px;
+    color: #000000;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.ml-contact-value:hover {
+    text-decoration: underline;
+}
+
+/* Download CV Button */
+.ml-cv-download {
+    margin-top: 32px;
+}
+
+.ml-download-cv-btn {
+    padding: 14px 32px;
+    background: #000000;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 24px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.ml-download-cv-btn:hover {
+    background: #333333;
+    transform: translateY(-2px);
+}
+
+/* ============================================================================
+   FOOTER
+   ============================================================================ */
+
+.ml-footer {
+    padding: 40px 24px;
+    border-top: 1px solid #E5E5E5;
+}
+
+.ml-footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ml-footer-text {
+    font-size: 13px;
+    color: #999999;
+}
+
+.ml-footer-social {
+    display: flex;
+    gap: 16px;
+}
+
+.ml-footer-social a {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid #E5E5E5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: #666666;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.ml-footer-social a:hover {
+    background: #000000;
+    color: #FFFFFF;
+    border-color: #000000;
+}
+
+/* ============================================================================
+   SCROLL TO TOP
+   ============================================================================ */
+
+.ml-scroll-top {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #000000;
+    color: #FFFFFF;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease;
+    z-index: 999;
+}
+
+.ml-scroll-top:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* ============================================================================
+   RESPONSIVE
+   ============================================================================ */
+
+@media (max-width: 768px) {
+    .ml-nav-links {
+        display: none; /* Mobile menu would go here */
+    }
+
+    .ml-hero {
+        padding: 80px 24px;
+    }
+
+    .ml-hero-name {
+        font-size: 36px;
+    }
+
+    .ml-stats {
+        flex-direction: column;
+        gap: 32px;
+    }
+
+    .ml-section {
+        padding: 60px 24px;
+    }
+
+    .ml-projects-grid,
+    .ml-services-grid,
+    .ml-education-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ml-timeline::before {
+        left: 10px;
+    }
+
+    .ml-timeline-item {
+        padding-left: 40px;
+    }
+
+    .ml-timeline-dot {
+        left: 3px;
+    }
+
+    .ml-footer-content {
+        flex-direction: column;
+        gap: 24px;
+        text-align: center;
+    }
+
+    .ml-scroll-top {
+        bottom: 20px;
+        right: 20px;
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .ml-hero-name {
+        font-size: 28px;
+    }
+
+    .ml-social-links {
+        flex-wrap: wrap;
+    }
+
+    .ml-stat-number {
+        font-size: 28px;
+    }
+}

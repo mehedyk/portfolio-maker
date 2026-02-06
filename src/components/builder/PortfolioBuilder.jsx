@@ -27,11 +27,28 @@ const PortfolioBuilder = () => {
         duration: '',
         description: ''
     });
+    const [currentEducation, setCurrentEducation] = useState({
+        degree: '',
+        institution: '',
+        year: '',
+        description: ''
+    });
+
+    // NEW: Profession hierarchy state
+    const [professionHierarchy, setProfessionHierarchy] = useState([]);
+    const [currentLevel, setCurrentLevel] = useState(1);
+    const [selectedPath, setSelectedPath] = useState([]);
+    const [showSpecialtyInput, setShowSpecialtyInput] = useState(false);
 
     const [formData, setFormData] = useState({
         profession_id: null,
         theme_id: null,
         username: profile?.username || '',
+        specialty_info: {
+            doctor_type: '', // For doctors: "Cardiologist", "Pediatrician", etc.
+            teacher_level: '', // For teachers: "Primary", "School", "College", "University"
+            booking_email: '', // For doctors - email to receive bookings
+        },
         content: {
             about: '',
             skills: [],
@@ -47,14 +64,22 @@ const PortfolioBuilder = () => {
             },
         },
         images: {
-            profile: '',
-            banner: '',
+            profile: '', // NO banner image anymore - you mentioned this!
         },
     });
 
     const fetchProfessions = async () => {
-        const { data } = await supabase.from('professions').select('*').order('name');
-        setProfessions(data || []);
+        const { data } = await supabase
+            .from('professions')
+            .select('*')
+            .order('level, name');
+        
+        if (data) {
+            setProfessions(data || []);
+            // Get root level professions (Engineer, Doctor, Teacher, Others)
+            const rootProfessions = data.filter(p => p.level === 1);
+            setProfessionHierarchy(rootProfessions);
+        }
     };
 
     const fetchThemes = async () => {
@@ -76,11 +101,12 @@ const PortfolioBuilder = () => {
                 profession_id: data.profession_id,
                 theme_id: data.theme_id,
                 username: data.username,
+                specialty_info: data.specialty_info || formData.specialty_info,
                 content: data.content || formData.content,
                 images: data.images || formData.images,
             });
         }
-    }, [portfolioId, formData.content, formData.images]);
+    }, [portfolioId]);
 
     useEffect(() => {
         fetchProfessions();
@@ -104,24 +130,103 @@ const PortfolioBuilder = () => {
         }
     }, [portfolioId, fetchPortfolio, user, navigate]);
 
+    // NEW: Handle profession selection with hierarchy
+    const handleProfessionSelect = async (profession) => {
+        const newPath = [...selectedPath, profession];
+        setSelectedPath(newPath);
+        
+        // Check if this profession has children
+        const children = professions.filter(p => p.parent_id === profession.id);
+        
+        if (children.length > 0) {
+            // Show next level
+            setProfessionHierarchy(children);
+            setCurrentLevel(currentLevel + 1);
+        } else {
+            // This is a leaf node - final selection
+            setFormData({ ...formData, profession_id: profession.id });
+            
+            // Check if this profession requires specialty info
+            if (profession.requires_specialty) {
+                setShowSpecialtyInput(true);
+            } else {
+                setShowSpecialtyInput(false);
+                setStep(2);
+            }
+        }
+    };
+
+    // NEW: Go back in profession hierarchy
+    const handleProfessionBack = () => {
+        if (currentLevel === 1) return;
+        
+        const newPath = selectedPath.slice(0, -1);
+        setSelectedPath(newPath);
+        setCurrentLevel(currentLevel - 1);
+        
+        if (newPath.length === 0) {
+            // Back to root
+            const rootProfessions = professions.filter(p => p.level === 1);
+            setProfessionHierarchy(rootProfessions);
+        } else {
+            // Get children of previous selection
+            const parentId = newPath[newPath.length - 1].id;
+            const siblings = professions.filter(p => p.parent_id === parentId);
+            setProfessionHierarchy(siblings);
+        }
+    };
+
+    // NEW: Handle specialty input submission
+    const handleSpecialtySubmit = () => {
+        const selectedProfession = professions.find(p => p.id === formData.profession_id);
+        
+        if (selectedProfession?.slug === 'doctor') {
+            if (!formData.specialty_info.doctor_type || !formData.specialty_info.booking_email) {
+                alert('Please enter your specialty type and booking email');
+                return;
+            }
+        } else if (selectedProfession?.slug === 'teacher') {
+            if (!formData.specialty_info.teacher_level) {
+                alert('Please select your teaching level');
+                return;
+            }
+        }
+        
+        setShowSpecialtyInput(false);
+        setStep(2);
+    };
+
     const handleImageUpload = async (e, type) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        setLoading(true);
-        try {
-            const { url } = await uploadToCloudinary(file);
-            setFormData({
-                ...formData,
-                images: {
-                    ...formData.images,
-                    [type]: url,
-                },
-            });
-        } catch (error) {
-            alert('Failed to upload image');
-        } finally {
-            setLoading(false);
+        // Validate square image for profile
+        if (type === 'profile') {
+            const img = new Image();
+            img.onload = async () => {
+                const aspectRatio = img.width / img.height;
+                if (Math.abs(aspectRatio - 1) > 0.1) {
+                    alert('Please upload a square image (1:1 aspect ratio) for your profile picture');
+                    return;
+                }
+                
+                setLoading(true);
+                try {
+                    const { url } = await uploadToCloudinary(file);
+                    setFormData({
+                        ...formData,
+                        images: {
+                            ...formData.images,
+                            [type]: url,
+                        },
+                    });
+                } catch (error) {
+                    alert('Failed to upload image');
+                } finally {
+                    setLoading(false);
+                }
+            };
+            img.src = URL.createObjectURL(file);
         }
     };
 
@@ -162,12 +267,7 @@ const PortfolioBuilder = () => {
             }
         });
         
-        setCurrentProject({
-            title: '',
-            description: '',
-            link: '',
-            technologies: ''
-        });
+        setCurrentProject({ title: '', description: '', link: '', technologies: '' });
     };
 
     const handleRemoveProject = (index) => {
@@ -194,12 +294,7 @@ const PortfolioBuilder = () => {
             }
         });
         
-        setCurrentExperience({
-            position: '',
-            company: '',
-            duration: '',
-            description: ''
-        });
+        setCurrentExperience({ position: '', company: '', duration: '', description: '' });
     };
 
     const handleRemoveExperience = (index) => {
@@ -212,6 +307,33 @@ const PortfolioBuilder = () => {
         });
     };
 
+    const handleAddEducation = () => {
+        if (!currentEducation.degree.trim() || !currentEducation.institution.trim()) {
+            alert('Please enter degree and institution');
+            return;
+        }
+
+        setFormData({
+            ...formData,
+            content: {
+                ...formData.content,
+                education: [...formData.content.education, { ...currentEducation }]
+            }
+        });
+        
+        setCurrentEducation({ degree: '', institution: '', year: '', description: '' });
+    };
+
+    const handleRemoveEducation = (index) => {
+        setFormData({
+            ...formData,
+            content: {
+                ...formData.content,
+                education: formData.content.education.filter((_, i) => i !== index)
+            }
+        });
+    };
+
     const handleSaveDraft = async () => {
         setLoading(true);
         try {
@@ -220,6 +342,7 @@ const PortfolioBuilder = () => {
                 profession_id: formData.profession_id,
                 theme_id: formData.theme_id,
                 username: formData.username,
+                specialty_info: formData.specialty_info,
                 content: formData.content,
                 images: formData.images,
                 is_published: false,
@@ -268,6 +391,7 @@ const PortfolioBuilder = () => {
                 profession_id: formData.profession_id,
                 theme_id: formData.theme_id,
                 username: formData.username,
+                specialty_info: formData.specialty_info,
                 content: formData.content,
                 images: formData.images,
             };
@@ -336,6 +460,22 @@ const PortfolioBuilder = () => {
         return 'image-upload-box' + (hasImage ? ' has-image' : '');
     };
 
+    // Render profession breadcrumb
+    const renderBreadcrumb = () => {
+        if (selectedPath.length === 0) return null;
+        
+        return (
+            <div className="profession-breadcrumb">
+                {selectedPath.map((prof, index) => (
+                    <span key={prof.id}>
+                        {prof.name}
+                        {index < selectedPath.length - 1 && ' > '}
+                    </span>
+                ))}
+            </div>
+        );
+    };
+
     return (
         <div className="portfolio-builder">
             <div className="builder-header">
@@ -377,21 +517,22 @@ const PortfolioBuilder = () => {
                     </div>
                 </div>
 
-                {step === 1 && (
+                {/* STEP 1: Profession Selection with Hierarchy */}
+                {step === 1 && !showSpecialtyInput && (
                     <div className="step-content">
                         <h2>Choose Your Profession</h2>
                         <p className="step-description">
-                            Select your profession to get tailored sections and recommendations for your portfolio.
+                            Select your profession to get tailored sections for your portfolio.
                         </p>
+                        
+                        {renderBreadcrumb()}
+                        
                         <div className="profession-grid">
-                            {professions.map((profession) => (
+                            {professionHierarchy.map((profession) => (
                                 <div
                                     key={profession.id}
                                     className={getProfessionClassName(profession.id)}
-                                    onClick={() => {
-                                        setFormData({ ...formData, profession_id: profession.id });
-                                        setStep(2);
-                                    }}
+                                    onClick={() => handleProfessionSelect(profession)}
                                 >
                                     <span className="profession-icon">{profession.icon}</span>
                                     <h3>{profession.name}</h3>
@@ -399,9 +540,115 @@ const PortfolioBuilder = () => {
                                 </div>
                             ))}
                         </div>
+                        
+                        {currentLevel > 1 && (
+                            <div className="step-navigation">
+                                <button onClick={handleProfessionBack} className="btn btn-secondary">
+                                    ← Back
+                                </button>
+                            </div>
+                        )}
                     </div>
                 )}
 
+                {/* STEP 1.5: Specialty Input (for Doctor/Teacher) */}
+                {step === 1 && showSpecialtyInput && (
+                    <div className="step-content">
+                        <h2>Additional Information</h2>
+                        <p className="step-description">
+                            Please provide some additional details about your profession.
+                        </p>
+
+                        {formData.profession_id && professions.find(p => p.id === formData.profession_id)?.slug === 'doctor' && (
+                            <>
+                                <div className="form-group">
+                                    <label className="label">What type of doctor are you?</label>
+                                    <input
+                                        type="text"
+                                        className="input"
+                                        placeholder="e.g., Cardiologist, Pediatrician, Surgeon"
+                                        value={formData.specialty_info.doctor_type}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                specialty_info: {
+                                                    ...formData.specialty_info,
+                                                    doctor_type: e.target.value
+                                                }
+                                            })
+                                        }
+                                    />
+                                </div>
+
+                                <div className="form-group">
+                                    <label className="label">Booking Email</label>
+                                    <input
+                                        type="email"
+                                        className="input"
+                                        placeholder="Email where you receive appointment requests"
+                                        value={formData.specialty_info.booking_email}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                specialty_info: {
+                                                    ...formData.specialty_info,
+                                                    booking_email: e.target.value
+                                                }
+                                            })
+                                        }
+                                    />
+                                    <p className="upload-hint">
+                                        Your portfolio will include a "Book Session" button that sends emails to this address
+                                    </p>
+                                </div>
+                            </>
+                        )}
+
+                        {formData.profession_id && professions.find(p => p.id === formData.profession_id)?.slug === 'teacher' && (
+                            <div className="form-group">
+                                <label className="label">What level do you teach?</label>
+                                <select
+                                    className="input"
+                                    value={formData.specialty_info.teacher_level}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            specialty_info: {
+                                                ...formData.specialty_info,
+                                                teacher_level: e.target.value
+                                            }
+                                        })
+                                    }
+                                >
+                                    <option value="">Select level...</option>
+                                    <option value="primary">Primary School</option>
+                                    <option value="school">Secondary School</option>
+                                    <option value="college">College</option>
+                                    <option value="university">University</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        )}
+
+                        <div className="step-navigation">
+                            <button 
+                                onClick={() => {
+                                    setShowSpecialtyInput(false);
+                                    setFormData({ ...formData, profession_id: null });
+                                    handleProfessionBack();
+                                }} 
+                                className="btn btn-secondary"
+                            >
+                                ← Back
+                            </button>
+                            <button onClick={handleSpecialtySubmit} className="btn btn-primary">
+                                Continue →
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* STEP 2: Theme Selection (same as before) */}
                 {step === 2 && (
                     <div className="step-content">
                         <h2>Pick Your Style</h2>
@@ -446,6 +693,7 @@ const PortfolioBuilder = () => {
                     </div>
                 )}
 
+                {/* STEP 3: Content (UPDATED - NO BANNER IMAGE) */}
                 {step === 3 && (
                     <div className="step-content">
                         <h2>Build Your Portfolio</h2>
@@ -453,27 +701,31 @@ const PortfolioBuilder = () => {
                             Fill in your details to create a stunning, professional portfolio.
                         </p>
 
+                        {/* Profile Image ONLY - NO BANNER */}
                         <div className="form-section">
                             <h3>
                                 <span className="section-icon">📸</span>
-                                Profile Images
+                                Profile Image
                             </h3>
                             <div className="image-uploads">
                                 <div className={getImageBoxClassName(formData.images.profile)}>
-                                    <label>Profile Picture</label>
-                                    <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'profile')} />
-                                    <p className="upload-hint">Recommended: Square image, at least 400x400px</p>
-                                    {formData.images.profile && <img src={formData.images.profile} alt="Profile" />}
-                                </div>
-                                <div className={getImageBoxClassName(formData.images.banner)}>
-                                    <label>Banner/Cover Image</label>
-                                    <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'banner')} />
-                                    <p className="upload-hint">Recommended: Wide image, 1920x600px</p>
-                                    {formData.images.banner && <img src={formData.images.banner} alt="Banner" />}
+                                    <label>Profile Picture (Square Image)</label>
+                                    <input 
+                                        type="file" 
+                                        accept="image/*" 
+                                        onChange={(e) => handleImageUpload(e, 'profile')} 
+                                    />
+                                    <p className="upload-hint">
+                                        <strong>Required:</strong> Please upload a square image (1:1 ratio), at least 400x400px
+                                    </p>
+                                    {formData.images.profile && (
+                                        <img src={formData.images.profile} alt="Profile" />
+                                    )}
                                 </div>
                             </div>
                         </div>
 
+                        {/* About Section */}
                         <div className="form-section">
                             <h3>
                                 <span className="section-icon">👤</span>
@@ -496,6 +748,7 @@ const PortfolioBuilder = () => {
                             </div>
                         </div>
 
+                        {/* Skills Section */}
                         <div className="form-section">
                             <h3>
                                 <span className="section-icon">⚡</span>
@@ -531,18 +784,102 @@ const PortfolioBuilder = () => {
                             )}
                         </div>
 
+                        {/* Education Section */}
                         <div className="form-section">
                             <h3>
-                                <span className="section-icon">💼</span>
-                                Projects & Work
+                                <span className="section-icon">🎓</span>
+                                Education
                             </h3>
                             <div className="card" style={{ marginBottom: '20px', background: 'var(--gray-50)' }}>
                                 <div className="form-group">
-                                    <label className="label">Project Title</label>
+                                    <label className="label">Degree</label>
                                     <input
                                         type="text"
                                         className="input"
-                                        placeholder="E-commerce Platform"
+                                        placeholder="Bachelor of Science in Computer Science"
+                                        value={currentEducation.degree}
+                                        onChange={(e) => setCurrentEducation({ ...currentEducation, degree: e.target.value })}
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="label">Institution</label>
+                                    <input
+                                        type="text"
+                                        className="input"
+                                        placeholder="Harvard University"
+                                        value={currentEducation.institution}
+                                        onChange={(e) => setCurrentEducation({ ...currentEducation, institution: e.target.value })}
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="label">Year</label>
+                                    <input
+                                        type="text"
+                                        className="input"
+                                        placeholder="2020"
+                                        value={currentEducation.year}
+                                        onChange={(e) => setCurrentEducation({ ...currentEducation, year: e.target.value })}
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="label">Description (optional)</label>
+                                    <textarea
+                                        className="textarea"
+                                        rows="3"
+                                        placeholder="Graduated with honors, GPA 3.9/4.0..."
+                                        value={currentEducation.description}
+                                        onChange={(e) => setCurrentEducation({ ...currentEducation, description: e.target.value })}
+                                    />
+                                </div>
+                                <button onClick={handleAddEducation} className="btn btn-primary">
+                                    Add Education
+                                </button>
+                            </div>
+
+                            {formData.content.education.length > 0 && (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                    {formData.content.education.map((edu, index) => (
+                                        <div key={index} className="card">
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                                <div style={{ flex: 1 }}>
+                                                    <h4 style={{ fontSize: '1.25rem', fontWeight: '700', marginBottom: '4px' }}>
+                                                        {edu.degree}
+                                                    </h4>
+                                                    <p style={{ color: 'var(--primary)', fontWeight: '600', marginBottom: '4px' }}>
+                                                        {edu.institution}
+                                                    </p>
+                                                    <p style={{ fontSize: '14px', color: 'var(--gray-600)', marginBottom: '8px' }}>
+                                                        {edu.year}
+                                                    </p>
+                                                    {edu.description && <p style={{ color: 'var(--gray-700)' }}>{edu.description}</p>}
+                                                </div>
+                                                <button
+                                                    onClick={() => handleRemoveEducation(index)}
+                                                    className="btn btn-danger btn-small"
+                                                    style={{ marginLeft: '16px' }}
+                                                >
+                                                    Remove
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Projects Section */}
+                        <div className="form-section">
+                            <h3>
+                                <span className="section-icon">💼</span>
+                                Projects / Papers
+                            </h3>
+                            <div className="card" style={{ marginBottom: '20px', background: 'var(--gray-50)' }}>
+                                <div className="form-group">
+                                    <label className="label">Project/Paper Title</label>
+                                    <input
+                                        type="text"
+                                        className="input"
+                                        placeholder="E-commerce Platform / Research Paper Title"
                                         value={currentProject.title}
                                         onChange={(e) => setCurrentProject({ ...currentProject, title: e.target.value })}
                                     />
@@ -558,7 +895,7 @@ const PortfolioBuilder = () => {
                                     />
                                 </div>
                                 <div className="form-group">
-                                    <label className="label">Project Link (optional)</label>
+                                    <label className="label">Link (optional)</label>
                                     <input
                                         type="url"
                                         className="input"
@@ -624,6 +961,7 @@ const PortfolioBuilder = () => {
                             )}
                         </div>
 
+                        {/* Work Experience Section */}
                         <div className="form-section">
                             <h3>
                                 <span className="section-icon">💻</span>
@@ -706,6 +1044,7 @@ const PortfolioBuilder = () => {
                             )}
                         </div>
 
+                        {/* Contact Information */}
                         <div className="form-section">
                             <h3>
                                 <span className="section-icon">📧</span>
