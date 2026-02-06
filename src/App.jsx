@@ -8,6 +8,7 @@ import AdminRoute from './components/auth/AdminRoute';
 import LandingPage from './pages/LandingPage';
 import Login from './components/auth/Login';
 import Signup from './components/auth/Signup';
+import ForgotPassword from './components/auth/ForgotPassword';
 import Dashboard from './components/dashboard/Dashboard';
 import PortfolioBuilder from './components/builder/PortfolioBuilder';
 import PublicPortfolio from './components/portfolio/PublicPortfolio';
@@ -23,6 +24,7 @@ function App() {
                     <Route path="/" element={<LandingPage />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/signup" element={<Signup />} />
+                    <Route path="/forgot-password" element={<ForgotPassword />} />
                     <Route path="/p/:username" element={<PublicPortfolio />} />
 
                     {/* Protected Routes */}

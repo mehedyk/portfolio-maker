@@ -73,6 +73,9 @@ const Login = () => {
                             placeholder="••••••••"
                             autoComplete="current-password"
                         />
+                        <Link to="/forgot-password" className="forgot-password-link">
+                            Forgot Password?
+                        </Link>
                     </div>
 
                     {error && <div className="error">{error}</div>}
