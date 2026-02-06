@@ -54,7 +54,7 @@ const LandingPage = () => {
             <section className="hero">
                 <div className="hero-content">
                     <div className="hero-badge">
-                        <Sparkles size={16} className="text-primary" />
+                        <Sparkles size={16} className="text-dark" />
                         <span>1 Free Credit • No Credit Card Required</span>
                     </div>
 

@@ -132,8 +132,10 @@
   margin-bottom: 32px;
   font-size: 14px;
   font-weight: 600;
-  color: var(--primary);
+  color: var(--gray-900);
+  /* Black text */
   animation: slideUp 0.8s ease-out;
+  border: 1px solid var(--gray-100);
 }
 
 .hero-title {
