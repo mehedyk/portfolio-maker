@@ -88,25 +88,44 @@ const PortfolioBuilder = () => {
     };
 
     const fetchPortfolio = useCallback(async () => {
-        if (!portfolioId) return;
-        
-        const { data } = await supabase
-            .from('portfolios')
-            .select('*')
-            .eq('id', portfolioId)
-            .single();
+    if (!portfolioId) return;
+    
+    const { data } = await supabase
+        .from('portfolios')
+        .select('*')
+        .eq('id', portfolioId)
+        .single();
 
-        if (data) {
-            setFormData({
-                profession_id: data.profession_id,
-                theme_id: data.theme_id,
-                username: data.username,
-                specialty_info: data.specialty_info || formData.specialty_info,
-                content: data.content || formData.content,
-                images: data.images || formData.images,
-            });
-        }
-    }, [portfolioId]);
+    if (data) {
+        setFormData({
+            profession_id: data.profession_id,
+            theme_id: data.theme_id,
+            username: data.username,
+            specialty_info: data.specialty_info || {
+                doctor_type: '',
+                teacher_level: '',
+                booking_email: '',
+            },
+            content: data.content || {
+                about: '',
+                skills: [],
+                experience: [],
+                education: [],
+                projects: [],
+                contact: {
+                    email: '',
+                    phone: '',
+                    linkedin: '',
+                    github: '',
+                    website: ''
+                },
+            },
+            images: data.images || {
+                profile: '',
+            },
+        });
+    }
+}, [portfolioId]);
 
     useEffect(() => {
         fetchProfessions();
