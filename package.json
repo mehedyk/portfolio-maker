@@ -1,6 +1,6 @@
 {
   "name": "portfolio-maker",
-  "version": "3.0.1",
+  "version": "4.0.0",
   "private": true,
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
