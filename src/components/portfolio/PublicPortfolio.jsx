@@ -1,26 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '../../services/supabase';
-import { ThemeSwitcher } from '../ThemeSwitcher';
-import { useThemeStore, applyTheme } from '../../stores/themeStore';
 import './PublicPortfolio.css';
-import MehedyLight from '../templates/MehedyLight';
-import MehedyDark from '../templates/MehedyDark';
 
 const PublicPortfolio = () => {
-    const { username } = useParams();
-    const [portfolio, setPortfolio] = useState(null);
     const { username } = useParams();
     const [portfolio, setPortfolio] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [showScrollTop, setShowScrollTop] = useState(false);
-
-    const { theme } = useThemeStore();
-
-    useEffect(() => {
-        applyTheme(theme);
-    }, [theme]);
 
     const fetchPortfolio = useCallback(async () => {
         console.log('Fetching portfolio for username:', username);
@@ -391,8 +379,6 @@ const PublicPortfolio = () => {
                 </div>
             </footer>
 
-            <ThemeSwitcher />
-
             {/* Scroll to Top Button */}
             <div 
                 className={'scroll-to-top ' + (showScrollTop ? 'visible' : '')}
@@ -401,32 +387,6 @@ const PublicPortfolio = () => {
                 ↑
             </div>
         </div>
-        const renderTemplate = () => {
-        const templateName = portfolio?.themes?.template_component;
-        
-        const templateProps = {
-            portfolio: portfolio,
-            content: portfolio.content,
-            images: portfolio.images,
-            specialty_info: portfolio.specialty_info
-        };
-
-        switch(templateName) {
-            case 'MehedyLight':
-                return <MehedyLight {...templateProps} />;
-            case 'MehedyDark':
-                return <MehedyDark {...templateProps} />;
-            default:
-                return <MehedyLight {...templateProps} />; // Default fallback
-        }
-    };
-
-    return (
-        <div className="public-portfolio">
-            {renderTemplate()}
-        </div>
-    );
-};
     );
 };
 
