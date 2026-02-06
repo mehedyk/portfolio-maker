@@ -43,16 +43,22 @@ export const AuthProvider = ({ children }) => {
 
     const fetchProfile = async (userId) => {
         try {
+            console.log('Fetching profile for:', userId);
             const { data, error } = await supabase
                 .from('user_profiles')
                 .select('*')
                 .eq('id', userId)
                 .single();
 
-            if (error) throw error;
+            if (error) {
+                console.error('Error fetching profile from DB:', error);
+                throw error;
+            }
+
+            console.log('Profile data received:', data);
             setProfile(data);
         } catch (error) {
-            console.error('Error fetching profile:', error);
+            console.error('Error in fetchProfile:', error);
         } finally {
             setLoading(false);
         }

@@ -1,6 +1,15 @@
 .landing-page {
   min-height: 100vh;
   overflow-x: hidden;
+
+  /* Enforce Professional Blue Theme locally, ignoring global theme state */
+  --primary: #0ea5e9;
+  --primary-dark: #0284c7;
+  --primary-light: #38bdf8;
+  --secondary: #06b6d4;
+  --accent: #14b8a6;
+  --gray-900: #0f172a;
+  --gradient-primary: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
 }
 
 /* Navigation */
