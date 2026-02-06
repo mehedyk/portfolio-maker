@@ -36,8 +36,9 @@ const Dashboard = () => {
     }, [user]);
 
     useEffect(() => {
+        refreshProfile();
         fetchPortfolio();
-    }, [fetchPortfolio]);
+    }, [fetchPortfolio, refreshProfile]);
 
     const handleUnpublish = async () => {
         if (!window.confirm('Are you sure you want to unpublish your portfolio?')) {
