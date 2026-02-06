@@ -12,10 +12,7 @@ import {
     CheckCircle2,
     Layout,
     Globe,
-    Users,
-    ShieldCheck,
     Star,
-    MonitorSmartphone,
     Sparkles
 } from 'lucide-react';
 import './LandingPage.css';
