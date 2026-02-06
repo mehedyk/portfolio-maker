@@ -49,7 +49,6 @@
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: 20px;
 }
 
 .nav-actions {
@@ -94,9 +93,12 @@
 }
 
 @keyframes float {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translate(0, 0);
   }
+
   50% {
     transform: translate(30px, -30px);
   }
@@ -287,9 +289,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 32px;
+  color: white;
+  /* Changed from text-fill-color transparent */
   margin-bottom: 24px;
   box-shadow: 0 8px 16px rgba(14, 165, 233, 0.2);
+}
+
+.feature-icon svg {
+  width: 32px;
+  height: 32px;
+  stroke-width: 2px;
 }
 
 .feature-card h3 {
@@ -509,17 +518,7 @@
   color: rgba(255, 255, 255, 0.8);
 }
 
-.pricing-card.featured .pricing-features li {
-  border-bottom-color: var(--gray-100);
-  color: var(--gray-700);
-}
-
-.pricing-features li::before {
-  content: "✓";
-  color: var(--primary);
-  font-weight: 700;
-  font-size: 18px;
-}
+/* Removed ::before generic content, using Lucide icon inline now */
 
 /* CTA Section */
 .cta-section {
@@ -621,7 +620,6 @@
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: 20px;
 }
 
 .footer-section h4 {
@@ -695,30 +693,30 @@
   .hero {
     padding: 100px 20px 60px;
   }
-  
+
   .hero-stats {
     gap: 32px;
   }
-  
+
   .features-grid,
   .steps-grid,
   .pricing-cards {
     grid-template-columns: 1fr;
   }
-  
+
   .steps-line {
     display: none;
   }
-  
+
   .pricing-card.featured {
     transform: scale(1);
   }
-  
+
   .footer-bottom {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .nav-actions {
     flex-wrap: wrap;
   }

@@ -1,20 +1,29 @@
 -- ============================================================================
 -- PORTFOLIO BUILDER - COMPLETE DATABASE SCHEMA
--- Run this ENTIRE file in Supabase SQL Editor
+-- Run this ENTIRE file in Supabase SQL Editor to reset/setup the database.
 -- ============================================================================
 
 -- ============================================================================
 -- STEP 1: CLEAN UP (Drop everything to start fresh)
 -- ============================================================================
 
+-- Drop triggers first
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+DROP TRIGGER IF EXISTS update_user_profiles_updated_at ON user_profiles;
+DROP TRIGGER IF EXISTS update_portfolios_updated_at ON portfolios;
+
+-- Drop functions
+DROP FUNCTION IF EXISTS handle_new_user() CASCADE;
+DROP FUNCTION IF EXISTS publish_portfolio_safe CASCADE;
+DROP FUNCTION IF EXISTS approve_payment CASCADE;
+DROP FUNCTION IF EXISTS update_updated_at_column CASCADE;
+
+-- Drop tables
 DROP TABLE IF EXISTS payment_requests CASCADE;
 DROP TABLE IF EXISTS portfolios CASCADE;
 DROP TABLE IF EXISTS themes CASCADE;
 DROP TABLE IF EXISTS professions CASCADE;
 DROP TABLE IF EXISTS user_profiles CASCADE;
-DROP FUNCTION IF EXISTS publish_portfolio_safe CASCADE;
-DROP FUNCTION IF EXISTS approve_payment CASCADE;
-DROP FUNCTION IF EXISTS update_updated_at_column CASCADE;
 
 -- ============================================================================
 -- STEP 2: CREATE TABLES
@@ -154,6 +163,23 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Handle New User (Auto-Profile Creation)
+CREATE OR REPLACE FUNCTION public.handle_new_user() 
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.user_profiles (id, email, full_name, username, role, credits)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    NEW.raw_user_meta_data->>'full_name',
+    NEW.raw_user_meta_data->>'username',
+    'user',
+    1
+  );
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 -- Publish portfolio function
 CREATE OR REPLACE FUNCTION publish_portfolio_safe(
     p_portfolio_id UUID,
@@ -223,6 +249,12 @@ $$;
 -- STEP 6: CREATE TRIGGERS
 -- ============================================================================
 
+-- Auto-create profile on auth signup
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+
+-- Timestamp updaters
 CREATE TRIGGER update_user_profiles_updated_at BEFORE UPDATE ON user_profiles
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
@@ -268,10 +300,11 @@ CREATE POLICY "Admins update requests" ON payment_requests FOR UPDATE
 CREATE POLICY "Anyone view professions" ON professions FOR SELECT USING (TRUE);
 CREATE POLICY "Anyone view themes" ON themes FOR SELECT USING (TRUE);
 
+-- Grant access to authenticated users
+GRANT SELECT, UPDATE ON public.user_profiles TO authenticated;
+
 -- ============================================================================
--- DONE! Now verify:
+-- DONE!
 -- ============================================================================
 
-SELECT 'TABLES CREATED:' as status, count(*) as count FROM information_schema.tables WHERE table_schema = 'public';
-SELECT 'PROFESSIONS:' as status, count(*) as count FROM professions;
-SELECT 'THEMES:' as status, count(*) as count FROM themes;
+SELECT 'DATABASE SETUP COMPLETE' as status;

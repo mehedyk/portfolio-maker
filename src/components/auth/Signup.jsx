@@ -84,7 +84,7 @@ const Signup = () => {
             setLoading(false);
         } else {
             setSuccess('Account created! Please check your email to verify your account.');
-            setLoading(false);
+            // Don't set loading false immediately so spinner stays until redirect starts
             setTimeout(() => {
                 navigate('/login');
             }, 3000);

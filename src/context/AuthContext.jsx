@@ -73,24 +73,7 @@ export const AuthProvider = ({ children }) => {
 
             if (error) throw error;
 
-            // Create user profile
-            if (data.user) {
-                const { error: profileError } = await supabase
-                    .from('user_profiles')
-                    .insert([
-                        {
-                            id: data.user.id,
-                            email: email,
-                            full_name: fullName,
-                            username: username,
-                            credits: 1,
-                            role: 'user',
-                        },
-                    ]);
-
-                if (profileError) throw profileError;
-            }
-
+            // Profile is now created automatically via database trigger (handle_new_user)
             return { data, error: null };
         } catch (error) {
             return { data: null, error };
