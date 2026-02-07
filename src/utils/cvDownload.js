@@ -104,7 +104,7 @@ export const downloadCV = async (portfolio, content, images, specialty_info) => 
     } catch (error) {
         console.error('Error generating CV:', error);
         alert('Failed to generate CV. Please try again.');
-        
+
         // Cleanup on error
         const loading = document.getElementById('cv-loading');
         const cvTemp = document.getElementById('cv-temp-content');
@@ -132,7 +132,7 @@ const createCVContent = (portfolio, content, images, specialty_info) => {
 
     const fullName = portfolio?.user_profiles?.full_name || 'Name';
     const profession = portfolio?.professions?.name || 'Professional';
-    
+
     div.innerHTML = `
         <!-- Header -->
         <div style="text-align: center; margin-bottom: 40px; border-bottom: 2px solid #000000; padding-bottom: 30px;">
@@ -362,7 +362,7 @@ const waitForImages = (element) => {
 export const downloadSimpleCV = (portfolio, content, specialty_info) => {
     const fullName = portfolio?.user_profiles?.full_name || 'Name';
     const profession = portfolio?.professions?.name || 'Professional';
-    
+
     const pdf = new jsPDF('p', 'mm', 'a4');
     let yPos = 20;
     const pageWidth = 210;
@@ -377,7 +377,7 @@ export const downloadSimpleCV = (portfolio, content, specialty_info) => {
         } else {
             pdf.setFont('helvetica', 'normal');
         }
-        
+
         const lines = pdf.splitTextToSize(text, maxWidth);
         pdf.text(lines, margin, yPos);
         yPos += (fontSize / 3) * lines.length + 5;
@@ -433,4 +433,5 @@ export const downloadSimpleCV = (portfolio, content, specialty_info) => {
     pdf.save(filename);
 };
 
-export default { downloadCV, downloadSimpleCV };
+const cvUtils = { downloadCV, downloadSimpleCV };
+export default cvUtils;

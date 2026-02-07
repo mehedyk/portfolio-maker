@@ -3,7 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../services/supabase';
 import { uploadToCloudinary } from '../../services/cloudinary';
-import { useThemeStore, themes as localThemes } from '../../stores/themeStore';
+import { uploadToCloudinary } from '../../services/cloudinary';
+import { themes as localThemes } from '../../stores/themeStore';
 import './PortfolioBuilder.css';
 
 const PortfolioBuilder = () => {
@@ -13,7 +14,7 @@ const PortfolioBuilder = () => {
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [professions, setProfessions] = useState([]);
-    const [themes, setThemes] = useState(localThemes); // Initialize with local themes
+    const [themes] = useState(localThemes); // Initialize with local themes
     const [showCreditModal, setShowCreditModal] = useState(false);
     const [currentSkill, setCurrentSkill] = useState('');
     const [currentProject, setCurrentProject] = useState({
