@@ -11,7 +11,7 @@ const PublicPortfolio = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Theme State
+    // Theme State - Default to light
     const [currentThemeId, setCurrentThemeId] = useState('light');
 
     const fetchPortfolio = useCallback(async () => {
@@ -62,11 +62,14 @@ const PublicPortfolio = () => {
 
             setPortfolio(combinedData);
 
-            // Set initial theme based on portfolio setting
-            // Default to 'light' if not specified or not 'dark'
-            const initialTheme = combinedData.theme_id || 'light';
-            // If the saved theme is explicitly 'dark' or related to dark, start in dark mode
-            if (initialTheme === 'dark' || initialTheme.includes('dark') || initialTheme.includes('midnight') || initialTheme.includes('carbon')) {
+            // FIXED: Determine theme based on theme_id (numeric from database)
+            // Map numeric theme IDs to light/dark mode
+            const themeId = combinedData.theme_id;
+            
+            // Dark themes: 2, 6, 7, 8 (dark, dark-elegance, midnight-slate, carbon-gold)
+            const darkThemeIds = [2, 6, 7, 8];
+            
+            if (darkThemeIds.includes(themeId)) {
                 setCurrentThemeId('dark');
             } else {
                 setCurrentThemeId('light');
