@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../services/supabase';
 import { uploadToCloudinary } from '../../services/cloudinary';
+import { useThemeStore, themes as localThemes } from '../../stores/themeStore';
 import './PortfolioBuilder.css';
 
 const PortfolioBuilder = () => {
@@ -12,7 +13,7 @@ const PortfolioBuilder = () => {
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [professions, setProfessions] = useState([]);
-    const [themes, setThemes] = useState([]);
+    const [themes, setThemes] = useState(localThemes); // Initialize with local themes
     const [showCreditModal, setShowCreditModal] = useState(false);
     const [currentSkill, setCurrentSkill] = useState('');
     const [currentProject, setCurrentProject] = useState({
@@ -73,7 +74,7 @@ const PortfolioBuilder = () => {
             .from('professions')
             .select('*')
             .order('level, name');
-        
+
         if (data) {
             setProfessions(data || []);
             // Get root level professions (Engineer, Doctor, Teacher, Others)
@@ -82,54 +83,51 @@ const PortfolioBuilder = () => {
         }
     };
 
-    const fetchThemes = async () => {
-        const { data } = await supabase.from('themes').select('*').order('tier, name');
-        setThemes(data || []);
-    };
+    // REMOVED fetchThemes - using localThemes imported from store
 
     const fetchPortfolio = useCallback(async () => {
-    if (!portfolioId) return;
-    
-    const { data } = await supabase
-        .from('portfolios')
-        .select('*')
-        .eq('id', portfolioId)
-        .single();
+        if (!portfolioId) return;
 
-    if (data) {
-        setFormData({
-            profession_id: data.profession_id,
-            theme_id: data.theme_id,
-            username: data.username,
-            specialty_info: data.specialty_info || {
-                doctor_type: '',
-                teacher_level: '',
-                booking_email: '',
-            },
-            content: data.content || {
-                about: '',
-                skills: [],
-                experience: [],
-                education: [],
-                projects: [],
-                contact: {
-                    email: '',
-                    phone: '',
-                    linkedin: '',
-                    github: '',
-                    website: ''
+        const { data } = await supabase
+            .from('portfolios')
+            .select('*')
+            .eq('id', portfolioId)
+            .single();
+
+        if (data) {
+            setFormData({
+                profession_id: data.profession_id,
+                theme_id: data.theme_id,
+                username: data.username,
+                specialty_info: data.specialty_info || {
+                    doctor_type: '',
+                    teacher_level: '',
+                    booking_email: '',
                 },
-            },
-            images: data.images || {
-                profile: '',
-            },
-        });
-    }
-}, [portfolioId]);
+                content: data.content || {
+                    about: '',
+                    skills: [],
+                    experience: [],
+                    education: [],
+                    projects: [],
+                    contact: {
+                        email: '',
+                        phone: '',
+                        linkedin: '',
+                        github: '',
+                        website: ''
+                    },
+                },
+                images: data.images || {
+                    profile: '',
+                },
+            });
+        }
+    }, [portfolioId]);
 
     useEffect(() => {
         fetchProfessions();
-        fetchThemes();
+        // fetchThemes(); // No longer needed, using local state
 
         if (portfolioId) {
             fetchPortfolio();
@@ -153,10 +151,10 @@ const PortfolioBuilder = () => {
     const handleProfessionSelect = async (profession) => {
         const newPath = [...selectedPath, profession];
         setSelectedPath(newPath);
-        
+
         // Check if this profession has children
         const children = professions.filter(p => p.parent_id === profession.id);
-        
+
         if (children.length > 0) {
             // Show next level
             setProfessionHierarchy(children);
@@ -164,7 +162,7 @@ const PortfolioBuilder = () => {
         } else {
             // This is a leaf node - final selection
             setFormData({ ...formData, profession_id: profession.id });
-            
+
             // Check if this profession requires specialty info
             if (profession.requires_specialty) {
                 setShowSpecialtyInput(true);
@@ -178,11 +176,11 @@ const PortfolioBuilder = () => {
     // NEW: Go back in profession hierarchy
     const handleProfessionBack = () => {
         if (currentLevel === 1) return;
-        
+
         const newPath = selectedPath.slice(0, -1);
         setSelectedPath(newPath);
         setCurrentLevel(currentLevel - 1);
-        
+
         if (newPath.length === 0) {
             // Back to root
             const rootProfessions = professions.filter(p => p.level === 1);
@@ -198,7 +196,7 @@ const PortfolioBuilder = () => {
     // NEW: Handle specialty input submission
     const handleSpecialtySubmit = () => {
         const selectedProfession = professions.find(p => p.id === formData.profession_id);
-        
+
         if (selectedProfession?.slug === 'doctor') {
             if (!formData.specialty_info.doctor_type || !formData.specialty_info.booking_email) {
                 alert('Please enter your specialty type and booking email');
@@ -210,7 +208,7 @@ const PortfolioBuilder = () => {
                 return;
             }
         }
-        
+
         setShowSpecialtyInput(false);
         setStep(2);
     };
@@ -228,7 +226,7 @@ const PortfolioBuilder = () => {
                     alert('Please upload a square image (1:1 aspect ratio) for your profile picture');
                     return;
                 }
-                
+
                 setLoading(true);
                 try {
                     const { url } = await uploadToCloudinary(file);
@@ -251,7 +249,7 @@ const PortfolioBuilder = () => {
 
     const handleAddSkill = () => {
         if (!currentSkill.trim()) return;
-        
+
         setFormData({
             ...formData,
             content: {
@@ -285,7 +283,7 @@ const PortfolioBuilder = () => {
                 projects: [...formData.content.projects, { ...currentProject }]
             }
         });
-        
+
         setCurrentProject({ title: '', description: '', link: '', technologies: '' });
     };
 
@@ -312,7 +310,7 @@ const PortfolioBuilder = () => {
                 experience: [...formData.content.experience, { ...currentExperience }]
             }
         });
-        
+
         setCurrentExperience({ position: '', company: '', duration: '', description: '' });
     };
 
@@ -339,7 +337,7 @@ const PortfolioBuilder = () => {
                 education: [...formData.content.education, { ...currentEducation }]
             }
         });
-        
+
         setCurrentEducation({ degree: '', institution: '', year: '', description: '' });
     };
 
@@ -422,7 +420,7 @@ const PortfolioBuilder = () => {
                     .from('portfolios')
                     .update(portfolioData)
                     .eq('id', portfolioId);
-                
+
                 if (error) throw error;
             } else {
                 const { data, error } = await supabase
@@ -430,7 +428,7 @@ const PortfolioBuilder = () => {
                     .insert([portfolioData])
                     .select()
                     .single();
-                
+
                 if (error) throw error;
                 if (data) portfolioIdToPublish = data.id;
             }
@@ -482,7 +480,7 @@ const PortfolioBuilder = () => {
     // Render profession breadcrumb
     const renderBreadcrumb = () => {
         if (selectedPath.length === 0) return null;
-        
+
         return (
             <div className="profession-breadcrumb">
                 {selectedPath.map((prof, index) => (
@@ -543,9 +541,9 @@ const PortfolioBuilder = () => {
                         <p className="step-description">
                             Select your profession to get tailored sections for your portfolio.
                         </p>
-                        
+
                         {renderBreadcrumb()}
-                        
+
                         <div className="profession-grid">
                             {professionHierarchy.map((profession) => (
                                 <div
@@ -559,7 +557,7 @@ const PortfolioBuilder = () => {
                                 </div>
                             ))}
                         </div>
-                        
+
                         {currentLevel > 1 && (
                             <div className="step-navigation">
                                 <button onClick={handleProfessionBack} className="btn btn-secondary">
@@ -650,12 +648,12 @@ const PortfolioBuilder = () => {
                         )}
 
                         <div className="step-navigation">
-                            <button 
+                            <button
                                 onClick={() => {
                                     setShowSpecialtyInput(false);
                                     setFormData({ ...formData, profession_id: null });
                                     handleProfessionBack();
-                                }} 
+                                }}
                                 className="btn btn-secondary"
                             >
                                 ← Back
@@ -729,10 +727,10 @@ const PortfolioBuilder = () => {
                             <div className="image-uploads">
                                 <div className={getImageBoxClassName(formData.images.profile)}>
                                     <label>Profile Picture (Square Image)</label>
-                                    <input 
-                                        type="file" 
-                                        accept="image/*" 
-                                        onChange={(e) => handleImageUpload(e, 'profile')} 
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(e) => handleImageUpload(e, 'profile')}
                                     />
                                     <p className="upload-hint">
                                         <strong>Required:</strong> Please upload a square image (1:1 ratio), at least 400x400px

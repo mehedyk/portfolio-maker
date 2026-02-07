@@ -9,8 +9,11 @@ import React, { useState, useEffect } from 'react';
 import { downloadCV } from '../../utils/cvDownload';
 import './MehedyLight.css';
 
-const MehedyLight = ({ portfolio, content, images, specialty_info }) => {
+const MehedyLight = ({ portfolio, content, images, specialty_info, onToggleTheme, isDarkMode }) => {
     const [showScrollTop, setShowScrollTop] = useState(false);
+    const [scrolled, setScrolled] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [activeSection, setActiveSection] = useState('home'); // Assuming 'home' is the initial active section
 
     const handleDownloadCV = () => {
         downloadCV(portfolio, content, images, specialty_info);
@@ -19,6 +22,7 @@ const MehedyLight = ({ portfolio, content, images, specialty_info }) => {
     useEffect(() => {
         const handleScroll = () => {
             setShowScrollTop(window.scrollY > 300);
+            setScrolled(window.scrollY > 50); // Set scrolled state based on scroll position
         };
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
@@ -28,43 +32,112 @@ const MehedyLight = ({ portfolio, content, images, specialty_info }) => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    const scrollToSection = (sectionId) => {
+    const scrollToSection = (e, sectionId) => {
+        e.preventDefault();
         const element = document.getElementById(sectionId);
         if (element) {
             element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            setActiveSection(sectionId);
+            setMobileMenuOpen(false); // Close mobile menu on section click
         }
     };
 
     return (
         <div className="mehedy-light-template">
             {/* Navigation */}
-            <nav className="ml-nav">
-                <div className="ml-container">
-                    <div className="ml-nav-brand">
+            <nav className={`ml-nav ${scrolled ? 'scrolled' : ''}`}>
+                <div className="ml-container ml-nav-content">
+                    <div className="ml-logo">
                         {portfolio?.user_profiles?.full_name || 'Portfolio'}
                     </div>
-                    <div className="ml-nav-links">
-                        <a href="#about" onClick={(e) => { e.preventDefault(); scrollToSection('about'); }}>
-                            About
-                        </a>
-                        <a href="#journey" onClick={(e) => { e.preventDefault(); scrollToSection('journey'); }}>
-                            Journey
-                        </a>
-                        <a href="#skills" onClick={(e) => { e.preventDefault(); scrollToSection('skills'); }}>
-                            Skills
-                        </a>
-                        <a href="#projects" onClick={(e) => { e.preventDefault(); scrollToSection('projects'); }}>
-                            Projects
-                        </a>
-                        <a href="#services" onClick={(e) => { e.preventDefault(); scrollToSection('services'); }}>
-                            Services
-                        </a>
-                        <a href="#contact" onClick={(e) => { e.preventDefault(); scrollToSection('contact'); }}>
-                            Contact
-                        </a>
+
+                    <div className="ml-nav-links desktop">
+                        <a href="#about" onClick={(e) => scrollToSection(e, 'about')} className={activeSection === 'about' ? 'active' : ''}>About</a>
+                        {content?.skills?.length > 0 && (
+                            <a href="#skills" onClick={(e) => scrollToSection(e, 'skills')} className={activeSection === 'skills' ? 'active' : ''}>Skills</a>
+                        )}
+                        {content?.experience?.length > 0 && (
+                            <a href="#journey" onClick={(e) => scrollToSection(e, 'journey')} className={activeSection === 'journey' ? 'active' : ''}>Experience</a>
+                        )}
+                        {content?.projects?.length > 0 && (
+                            <a href="#projects" onClick={(e) => scrollToSection(e, 'projects')} className={activeSection === 'projects' ? 'active' : ''}>Projects</a>
+                        )}
+                        {/* Assuming 'services' is always present or handled differently */}
+                        <a href="#services" onClick={(e) => scrollToSection(e, 'services')} className={activeSection === 'services' ? 'active' : ''}>Services</a>
+                        <a href="#contact" onClick={(e) => scrollToSection(e, 'contact')} className={`ml-btn-primary ${activeSection === 'contact' ? 'active' : ''}`}>Hire Me</a>
+
+                        {/* Theme Toggle Button */}
+                        <button
+                            onClick={onToggleTheme}
+                            className="theme-toggle-btn"
+                            aria-label="Toggle Dark Mode"
+                            style={{
+                                background: 'transparent',
+                                border: '1px solid var(--ml-border)',
+                                borderRadius: '50%',
+                                width: '40px',
+                                height: '40px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                cursor: 'pointer',
+                                marginLeft: '1rem',
+                                fontSize: '1.2rem',
+                                color: 'var(--ml-text-primary)',
+                                transition: 'all 0.3s ease'
+                            }}
+                        >
+                            {isDarkMode ? '☀️' : '🌙'}
+                        </button>
+                    </div>
+
+                    <div className="ml-mobile-toggle" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+                        <span></span>
+                        <span></span>
+                        <span></span>
                     </div>
                 </div>
             </nav>
+
+            {/* Mobile Navigation Menu */}
+            {mobileMenuOpen && (
+                <div className="ml-mobile-menu">
+                    <a href="#about" onClick={(e) => scrollToSection(e, 'about')} className={activeSection === 'about' ? 'active' : ''}>About</a>
+                    {content?.skills?.length > 0 && (
+                        <a href="#skills" onClick={(e) => scrollToSection(e, 'skills')} className={activeSection === 'skills' ? 'active' : ''}>Skills</a>
+                    )}
+                    {content?.experience?.length > 0 && (
+                        <a href="#journey" onClick={(e) => scrollToSection(e, 'journey')} className={activeSection === 'journey' ? 'active' : ''}>Experience</a>
+                    )}
+                    {content?.projects?.length > 0 && (
+                        <a href="#projects" onClick={(e) => scrollToSection(e, 'projects')} className={activeSection === 'projects' ? 'active' : ''}>Projects</a>
+                    )}
+                    <a href="#services" onClick={(e) => scrollToSection(e, 'services')} className={activeSection === 'services' ? 'active' : ''}>Services</a>
+                    <a href="#contact" onClick={(e) => scrollToSection(e, 'contact')} className={`ml-btn-primary ${activeSection === 'contact' ? 'active' : ''}`}>Hire Me</a>
+                    <button
+                        onClick={onToggleTheme}
+                        className="theme-toggle-btn"
+                        aria-label="Toggle Dark Mode"
+                        style={{
+                            background: 'transparent',
+                            border: '1px solid var(--ml-border)',
+                            borderRadius: '50%',
+                            width: '40px',
+                            height: '40px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer',
+                            marginTop: '1rem',
+                            fontSize: '1.2rem',
+                            color: 'var(--ml-text-primary)',
+                            transition: 'all 0.3s ease'
+                        }}
+                    >
+                        {isDarkMode ? '☀️' : '🌙'}
+                    </button>
+                </div>
+            )}
 
             {/* Hero Section */}
             <section className="ml-hero">
@@ -73,8 +146,8 @@ const MehedyLight = ({ portfolio, content, images, specialty_info }) => {
                         {/* Profile Image */}
                         {images?.profile && (
                             <div className="ml-profile-wrapper">
-                                <img 
-                                    src={images.profile} 
+                                <img
+                                    src={images.profile}
                                     alt={portfolio?.user_profiles?.full_name}
                                     className="ml-profile-image"
                                 />
@@ -199,9 +272,9 @@ const MehedyLight = ({ portfolio, content, images, specialty_info }) => {
                                     <div className="ml-project-header">
                                         <h3 className="ml-project-title">{project.title}</h3>
                                         {project.link && (
-                                            <a 
-                                                href={project.link} 
-                                                target="_blank" 
+                                            <a
+                                                href={project.link}
+                                                target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="ml-project-link"
                                             >
@@ -230,7 +303,7 @@ const MehedyLight = ({ portfolio, content, images, specialty_info }) => {
             <section id="services" className="ml-section">
                 <div className="ml-container">
                     <h2 className="ml-section-title">SERVICES</h2>
-                    
+
                     {/* Doctor Booking Section */}
                     {specialty_info?.booking_email && (
                         <div className="ml-booking-card">
@@ -240,7 +313,7 @@ const MehedyLight = ({ portfolio, content, images, specialty_info }) => {
                                     Specialty: {specialty_info.doctor_type}
                                 </p>
                             )}
-                            <a 
+                            <a
                                 href={`mailto:${specialty_info.booking_email}?subject=Appointment Request&body=Hello, I would like to schedule an appointment.`}
                                 className="ml-book-btn"
                             >
@@ -292,7 +365,7 @@ const MehedyLight = ({ portfolio, content, images, specialty_info }) => {
                         <p className="ml-contact-intro">
                             Let's connect and discuss how we can work together.
                         </p>
-                        
+
                         <div className="ml-contact-methods">
                             {content?.contact?.email && (
                                 <div className="ml-contact-method">

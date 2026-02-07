@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '../../services/supabase';
+import MehedyLight from '../templates/MehedyLight';
+import MehedyDark from '../templates/MehedyDark';
 import './PublicPortfolio.css';
 
 const PublicPortfolio = () => {
@@ -8,11 +10,13 @@ const PublicPortfolio = () => {
     const [portfolio, setPortfolio] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [showScrollTop, setShowScrollTop] = useState(false);
+
+    // Theme State
+    const [currentThemeId, setCurrentThemeId] = useState('light');
 
     const fetchPortfolio = useCallback(async () => {
         console.log('Fetching portfolio for username:', username);
-        
+
         try {
             const { data: portfolioData, error: portfolioError } = await supabase
                 .from('portfolios')
@@ -50,13 +54,23 @@ const PublicPortfolio = () => {
 
             const combinedData = {
                 ...portfolioData,
-                user_profiles: userProfile || { 
-                    full_name: 'Portfolio Owner', 
-                    email: '' 
+                user_profiles: userProfile || {
+                    full_name: 'Portfolio Owner',
+                    email: ''
                 }
             };
 
             setPortfolio(combinedData);
+
+            // Set initial theme based on portfolio setting
+            // Default to 'light' if not specified or not 'dark'
+            const initialTheme = combinedData.theme_id || 'light';
+            // If the saved theme is explicitly 'dark' or related to dark, start in dark mode
+            if (initialTheme === 'dark' || initialTheme.includes('dark') || initialTheme.includes('midnight') || initialTheme.includes('carbon')) {
+                setCurrentThemeId('dark');
+            } else {
+                setCurrentThemeId('light');
+            }
 
             // Increment view count (non-blocking)
             supabase
@@ -81,23 +95,8 @@ const PublicPortfolio = () => {
         fetchPortfolio();
     }, [fetchPortfolio]);
 
-    useEffect(() => {
-        const handleScroll = () => {
-            setShowScrollTop(window.scrollY > 300);
-        };
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
-
-    const scrollToTop = () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
-    const scrollToSection = (sectionId) => {
-        const element = document.getElementById(sectionId);
-        if (element) {
-            element.scrollIntoView({ behavior: 'smooth' });
-        }
+    const toggleTheme = () => {
+        setCurrentThemeId(prev => prev === 'light' ? 'dark' : 'light');
     };
 
     if (loading) {
@@ -131,262 +130,32 @@ const PublicPortfolio = () => {
 
     const content = portfolio.content || {};
     const images = portfolio.images || {};
+    const specialty_info = portfolio.specialty_info || {};
 
+    // Render the appropriate template based on currentThemeId
+    if (currentThemeId === 'dark') {
+        return (
+            <MehedyDark
+                portfolio={portfolio}
+                content={content}
+                images={images}
+                specialty_info={specialty_info}
+                onToggleTheme={toggleTheme}
+                isDarkMode={true}
+            />
+        );
+    }
+
+    // Default to Light theme
     return (
-        <div className="public-portfolio">
-            {/* Navigation */}
-            <nav className="portfolio-nav">
-                <div className="container">
-                    <div className="portfolio-nav-brand">
-                        {portfolio.user_profiles.full_name || 'Portfolio'}
-                    </div>
-                    <div className="portfolio-nav-links">
-                        <a href="#about" onClick={(e) => { e.preventDefault(); scrollToSection('about'); }}>About</a>
-                        {content.skills && content.skills.length > 0 && (
-                            <a href="#skills" onClick={(e) => { e.preventDefault(); scrollToSection('skills'); }}>Skills</a>
-                        )}
-                        {content.experience && content.experience.length > 0 && (
-                            <a href="#experience" onClick={(e) => { e.preventDefault(); scrollToSection('experience'); }}>Experience</a>
-                        )}
-                        {content.projects && content.projects.length > 0 && (
-                            <a href="#projects" onClick={(e) => { e.preventDefault(); scrollToSection('projects'); }}>Projects</a>
-                        )}
-                        <a href="#contact" onClick={(e) => { e.preventDefault(); scrollToSection('contact'); }}>Contact</a>
-                    </div>
-                </div>
-            </nav>
-
-            {/* Header - No Banner, Clean Design */}
-            <header className="portfolio-header">
-                <div className="container">
-                    {images.profile && (
-                        <div className="profile-image-wrapper">
-                            <img src={images.profile} alt={portfolio.user_profiles.full_name} className="profile-image" />
-                        </div>
-                    )}
-                    <h1>{portfolio.user_profiles.full_name || 'Portfolio Owner'}</h1>
-                    <p className="profession">{portfolio.professions?.name || 'Professional'}</p>
-                    
-                    {/* Social Links */}
-                    <div className="social-links">
-                        {content.contact?.email && (
-                            <a href={'mailto:' + content.contact.email} className="social-link" aria-label="Email">
-                                📧
-                            </a>
-                        )}
-                        {content.contact?.linkedin && (
-                            <a href={content.contact.linkedin} target="_blank" rel="noopener noreferrer" className="social-link" aria-label="LinkedIn">
-                                💼
-                            </a>
-                        )}
-                        {content.contact?.github && (
-                            <a href={content.contact.github} target="_blank" rel="noopener noreferrer" className="social-link" aria-label="GitHub">
-                                💻
-                            </a>
-                        )}
-                        {content.contact?.website && (
-                            <a href={content.contact.website} target="_blank" rel="noopener noreferrer" className="social-link" aria-label="Website">
-                                🌐
-                            </a>
-                        )}
-                    </div>
-                </div>
-            </header>
-
-            {/* About Section */}
-            {content.about && (
-                <section id="about" className="portfolio-section">
-                    <div className="container">
-                        <div className="section-header">
-                            <div className="section-badge">
-                                <span>👤</span>
-                                <span>About Me</span>
-                            </div>
-                            <h2>Know Who I Am</h2>
-                            <div className="section-divider"></div>
-                        </div>
-                        <div className="about-content">
-                            <p className="about-text">{content.about}</p>
-                        </div>
-                    </div>
-                </section>
-            )}
-
-            {/* Skills Section */}
-            {content.skills && content.skills.length > 0 && (
-                <section id="skills" className="portfolio-section">
-                    <div className="container">
-                        <div className="section-header">
-                            <div className="section-badge">
-                                <span>⚡</span>
-                                <span>Skills</span>
-                            </div>
-                            <h2>What I'm Good At</h2>
-                            <div className="section-divider"></div>
-                        </div>
-                        <div className="skills-grid">
-                            {content.skills.map((skill, index) => (
-                                <div key={index} className="skill-badge">
-                                    {skill}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </section>
-            )}
-
-            {/* Experience Section */}
-            {content.experience && content.experience.length > 0 && (
-                <section id="experience" className="portfolio-section">
-                    <div className="container">
-                        <div className="section-header">
-                            <div className="section-badge">
-                                <span>💼</span>
-                                <span>Experience</span>
-                            </div>
-                            <h2>My Journey</h2>
-                            <div className="section-divider"></div>
-                        </div>
-                        <div className="experience-timeline">
-                            {content.experience.map((exp, index) => (
-                                <div key={index} className="experience-item">
-                                    <div className="experience-card">
-                                        <h3>{exp.position}</h3>
-                                        <div className="experience-company">{exp.company}</div>
-                                        {exp.duration && (
-                                            <div className="experience-duration">📅 {exp.duration}</div>
-                                        )}
-                                        {exp.description && (
-                                            <p className="experience-description">{exp.description}</p>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </section>
-            )}
-
-            {/* Projects Section */}
-            {content.projects && content.projects.length > 0 && (
-                <section id="projects" className="portfolio-section">
-                    <div className="container">
-                        <div className="section-header">
-                            <div className="section-badge">
-                                <span>🚀</span>
-                                <span>Projects</span>
-                            </div>
-                            <h2>Things I've Built</h2>
-                            <div className="section-divider"></div>
-                        </div>
-                        <div className="projects-grid">
-                            {content.projects.map((project, index) => (
-                                <div key={index} className="project-card">
-                                    <div className="project-content">
-                                        <h3>{project.title}</h3>
-                                        <p className="project-description">{project.description}</p>
-                                        
-                                        {project.technologies && (
-                                            <div className="project-tech">
-                                                {project.technologies.split(',').map((tech, i) => (
-                                                    <span key={i} className="tech-tag">{tech.trim()}</span>
-                                                ))}
-                                            </div>
-                                        )}
-                                        
-                                        {project.link && (
-                                            <a 
-                                                href={project.link} 
-                                                target="_blank" 
-                                                rel="noopener noreferrer" 
-                                                className="project-link"
-                                            >
-                                                View Project <span>→</span>
-                                            </a>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </section>
-            )}
-
-            {/* Contact Section */}
-            {content.contact && (
-                <section id="contact" className="portfolio-section contact-section">
-                    <div className="container">
-                        <div className="section-header">
-                            <div className="section-badge">
-                                <span>📬</span>
-                                <span>Get In Touch</span>
-                            </div>
-                            <h2>Let's Connect</h2>
-                            <div className="section-divider"></div>
-                        </div>
-                        <div className="contact-grid">
-                            {content.contact.email && (
-                                <div className="contact-card">
-                                    <div className="contact-icon">📧</div>
-                                    <h3>Email</h3>
-                                    <a href={'mailto:' + content.contact.email} className="contact-link">
-                                        {content.contact.email}
-                                    </a>
-                                </div>
-                            )}
-                            {content.contact.phone && (
-                                <div className="contact-card">
-                                    <div className="contact-icon">📱</div>
-                                    <h3>Phone</h3>
-                                    <a href={'tel:' + content.contact.phone} className="contact-link">
-                                        {content.contact.phone}
-                                    </a>
-                                </div>
-                            )}
-                            {content.contact.linkedin && (
-                                <div className="contact-card">
-                                    <div className="contact-icon">💼</div>
-                                    <h3>LinkedIn</h3>
-                                    <a href={content.contact.linkedin} target="_blank" rel="noopener noreferrer" className="contact-link">
-                                        Connect with me
-                                    </a>
-                                </div>
-                            )}
-                            {content.contact.github && (
-                                <div className="contact-card">
-                                    <div className="contact-icon">💻</div>
-                                    <h3>GitHub</h3>
-                                    <a href={content.contact.github} target="_blank" rel="noopener noreferrer" className="contact-link">
-                                        View my code
-                                    </a>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </section>
-            )}
-
-            {/* Footer */}
-            <footer className="portfolio-footer">
-                <div className="container">
-                    <div className="footer-brand">
-                        Built with Portfolio Builder • {new Date().getFullYear()}
-                    </div>
-                    <div className="view-count">
-                        <span>👁️</span>
-                        <span>{portfolio.view_count || 0} views</span>
-                    </div>
-                </div>
-            </footer>
-
-            {/* Scroll to Top Button */}
-            <div 
-                className={'scroll-to-top ' + (showScrollTop ? 'visible' : '')}
-                onClick={scrollToTop}
-            >
-                ↑
-            </div>
-        </div>
+        <MehedyLight
+            portfolio={portfolio}
+            content={content}
+            images={images}
+            specialty_info={specialty_info}
+            onToggleTheme={toggleTheme}
+            isDarkMode={false}
+        />
     );
 };
 
