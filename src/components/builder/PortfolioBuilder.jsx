@@ -6,6 +6,37 @@ import { uploadToCloudinary } from '../../services/cloudinary';
 import { themes as localThemes } from '../../stores/themeStore';
 import './PortfolioBuilder.css';
 
+// ============================================================================
+// THEME ID MAPPER - Converts string theme IDs to database numeric IDs
+// ============================================================================
+const mapThemeIdToDatabase = (stringThemeId) => {
+    const themeMapping = {
+        'light': 1,
+        'dark': 2,
+        'professional-blue': 3,
+        'minimal-gray': 4,
+        'fresh-green': 5,
+        'dark-elegance': 6,
+        'midnight-slate': 7,
+        'carbon-gold': 8,
+        'ocean-breeze': 9,
+        'sunset-glow': 10,
+        'purple-reign': 11,
+        'rose-pink': 12,
+        'crimson-red': 13,
+        'lime-fresh': 14,
+        'teal-mint': 15
+    };
+    
+    // If it's already a number, return it
+    if (typeof stringThemeId === 'number') {
+        return stringThemeId;
+    }
+    
+    // If it's a string, map it to the database ID
+    return themeMapping[stringThemeId] || 1; // Default to 1 if not found
+};
+
 const PortfolioBuilder = () => {
     const { user, profile, refreshProfile } = useAuth();
     const navigate = useNavigate();
@@ -43,7 +74,7 @@ const PortfolioBuilder = () => {
 
     const [formData, setFormData] = useState({
         profession_id: null,
-        theme_id: null,
+        theme_id: 1, // Default to numeric ID
         username: profile?.username || '',
         specialty_info: {
             doctor_type: '', // For doctors: "Cardiologist", "Pediatrician", etc.
@@ -65,7 +96,7 @@ const PortfolioBuilder = () => {
             },
         },
         images: {
-            profile: '', // NO banner image anymore - you mentioned this!
+            profile: '', // NO banner image anymore
         },
     });
 
@@ -83,8 +114,6 @@ const PortfolioBuilder = () => {
         }
     };
 
-    // REMOVED fetchThemes - using localThemes imported from store
-
     const fetchPortfolio = useCallback(async () => {
         if (!portfolioId) return;
 
@@ -97,7 +126,7 @@ const PortfolioBuilder = () => {
         if (data) {
             setFormData({
                 profession_id: data.profession_id,
-                theme_id: data.theme_id,
+                theme_id: data.theme_id, // This will already be numeric from DB
                 username: data.username,
                 specialty_info: data.specialty_info || {
                     doctor_type: '',
@@ -127,7 +156,6 @@ const PortfolioBuilder = () => {
 
     useEffect(() => {
         fetchProfessions();
-        // fetchThemes(); // No longer needed, using local state
 
         if (portfolioId) {
             fetchPortfolio();
@@ -357,7 +385,7 @@ const PortfolioBuilder = () => {
             const portfolioData = {
                 user_id: user.id,
                 profession_id: formData.profession_id,
-                theme_id: formData.theme_id,
+                theme_id: mapThemeIdToDatabase(formData.theme_id), // FIXED: Convert to numeric
                 username: formData.username,
                 specialty_info: formData.specialty_info,
                 content: formData.content,
@@ -406,7 +434,7 @@ const PortfolioBuilder = () => {
             const portfolioData = {
                 user_id: user.id,
                 profession_id: formData.profession_id,
-                theme_id: formData.theme_id,
+                theme_id: mapThemeIdToDatabase(formData.theme_id), // FIXED: Convert to numeric
                 username: formData.username,
                 specialty_info: formData.specialty_info,
                 content: formData.content,
@@ -665,7 +693,7 @@ const PortfolioBuilder = () => {
                     </div>
                 )}
 
-                {/* STEP 2: Theme Selection (same as before) */}
+                {/* STEP 2: Theme Selection */}
                 {step === 2 && (
                     <div className="step-content">
                         <h2>Pick Your Style</h2>
@@ -687,7 +715,8 @@ const PortfolioBuilder = () => {
                                                 alert('Premium themes require credits. Please purchase credits first.');
                                                 return;
                                             }
-                                            setFormData({ ...formData, theme_id: theme.id });
+                                            // FIXED: Map string ID to numeric ID before saving
+                                            setFormData({ ...formData, theme_id: mapThemeIdToDatabase(theme.id) });
                                             setStep(3);
                                         }}
                                     >
@@ -710,7 +739,7 @@ const PortfolioBuilder = () => {
                     </div>
                 )}
 
-                {/* STEP 3: Content (UPDATED - NO BANNER IMAGE) */}
+                {/* STEP 3: Content (continues with same content as before...) */}
                 {step === 3 && (
                     <div className="step-content">
                         <h2>Build Your Portfolio</h2>
