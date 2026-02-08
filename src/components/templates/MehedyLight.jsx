@@ -1,16 +1,14 @@
-import React, { useState } from 'react';
-import { Download, Mail, Phone, MapPin, Moon, Sun, Github, Linkedin, Twitter, Globe, Briefcase, GraduationCap, Award, Code } from 'lucide-react';
+import React from 'react';
+import { Download, Mail, Phone, MapPin, Moon, Sun, Github, Linkedin, Twitter, Globe, Briefcase, Award, Code } from 'lucide-react';
 import './MehedyLight.css';
 
 const MehedyLight = ({ portfolio, content, images, specialty_info, onToggleTheme, isDarkMode }) => {
-    const [activeSection, setActiveSection] = useState('about');
 
     const userProfile = portfolio?.user_profiles || {};
     const profession = portfolio?.professions?.name || 'Professional';
     const cvUrl = portfolio?.cv_url || content?.cv_url;
 
     const scrollToSection = (sectionId) => {
-        setActiveSection(sectionId);
         const element = document.getElementById(sectionId);
         if (element) {
             element.scrollIntoView({ behavior: 'smooth', block: 'start' });
