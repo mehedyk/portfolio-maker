@@ -796,3 +796,130 @@
         font-size: 1.5rem;
     }
 }
+
+/* ============================================================================
+   CV UPLOAD STYLES
+   ============================================================================ */
+
+/* CV Upload Container */
+.cv-upload-container {
+    margin-top: 1rem;
+}
+
+/* Upload Area (when no CV uploaded) */
+.upload-area {
+    border: 2px dashed var(--border, #e2e8f0);
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    background: var(--gray-50, #f8fafc);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.upload-area:hover {
+    border-color: var(--primary, #2563eb);
+    background: var(--bg, #ffffff);
+}
+
+.upload-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    color: var(--text-light, #64748b);
+    font-size: 1rem;
+}
+
+.upload-label:hover {
+    color: var(--primary, #2563eb);
+}
+
+/* CV Uploaded State */
+.cv-uploaded {
+    background: #f0fdf4;
+    border: 1px solid #22c55e;
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+
+.cv-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #22c55e;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.cv-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+/* CV Action Buttons */
+.btn-view-cv,
+.btn-remove-cv {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    text-decoration: none;
+}
+
+.btn-view-cv {
+    background: var(--primary, #2563eb);
+    color: white;
+}
+
+.btn-view-cv:hover {
+    background: var(--primary-dark, #1d4ed8);
+    transform: translateY(-1px);
+}
+
+.btn-remove-cv {
+    background: transparent;
+    color: #ef4444;
+    border: 1px solid #ef4444;
+}
+
+.btn-remove-cv:hover {
+    background: #ef4444;
+    color: white;
+}
+
+/* Small Spinner (for CV upload) */
+.spinner-small {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border, #e2e8f0);
+    border-top-color: var(--primary, #2563eb);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { 
+        transform: rotate(360deg); 
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .cv-actions {
+        flex-direction: column;
+    }
+
+    .btn-view-cv,
+    .btn-remove-cv {
+        width: 100%;
+        justify-content: center;
+    }
+}

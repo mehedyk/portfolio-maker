@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../services/supabase';
 import { uploadToCloudinary } from '../../services/cloudinary';
 import { themes as localThemes } from '../../stores/themeStore';
+import { Upload, FileText, Eye, X } from 'lucide-react';
 import './PortfolioBuilder.css';
 
 // ============================================================================
@@ -66,7 +67,11 @@ const PortfolioBuilder = () => {
         description: ''
     });
 
-    // NEW: Profession hierarchy state
+    // CV Upload States
+    const [cvUploading, setCvUploading] = useState(false);
+    const [cvUrl, setCvUrl] = useState('');
+
+    // Profession hierarchy state
     const [professionHierarchy, setProfessionHierarchy] = useState([]);
     const [currentLevel, setCurrentLevel] = useState(1);
     const [selectedPath, setSelectedPath] = useState([]);
@@ -76,10 +81,11 @@ const PortfolioBuilder = () => {
         profession_id: null,
         theme_id: 1, // Default to numeric ID
         username: profile?.username || '',
+        cv_url: '', // CV URL field
         specialty_info: {
-            doctor_type: '', // For doctors: "Cardiologist", "Pediatrician", etc.
-            teacher_level: '', // For teachers: "Primary", "School", "College", "University"
-            booking_email: '', // For doctors - email to receive bookings
+            doctor_type: '',
+            teacher_level: '',
+            booking_email: '',
         },
         content: {
             about: '',
@@ -96,7 +102,7 @@ const PortfolioBuilder = () => {
             },
         },
         images: {
-            profile: '', // NO banner image anymore
+            profile: '',
         },
     });
 
@@ -108,7 +114,6 @@ const PortfolioBuilder = () => {
 
         if (data) {
             setProfessions(data || []);
-            // Get root level professions (Engineer, Doctor, Teacher, Others)
             const rootProfessions = data.filter(p => p.level === 1);
             setProfessionHierarchy(rootProfessions);
         }
@@ -126,8 +131,9 @@ const PortfolioBuilder = () => {
         if (data) {
             setFormData({
                 profession_id: data.profession_id,
-                theme_id: data.theme_id, // This will already be numeric from DB
+                theme_id: data.theme_id,
                 username: data.username,
+                cv_url: data.cv_url || '',
                 specialty_info: data.specialty_info || {
                     doctor_type: '',
                     teacher_level: '',
@@ -151,6 +157,9 @@ const PortfolioBuilder = () => {
                     profile: '',
                 },
             });
+            
+            // Set CV URL state
+            setCvUrl(data.cv_url || '');
         }
     }, [portfolioId]);
 
@@ -175,23 +184,72 @@ const PortfolioBuilder = () => {
         }
     }, [portfolioId, fetchPortfolio, user, navigate]);
 
-    // NEW: Handle profession selection with hierarchy
+    // ============================================================================
+    // CV UPLOAD HANDLERS
+    // ============================================================================
+    
+    const handleCVUpload = async (e) => {
+        const file = e.target.files[0];
+        
+        if (!file) return;
+        
+        // Validate file type
+        if (file.type !== 'application/pdf') {
+            alert('Please upload a PDF file');
+            return;
+        }
+        
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('File size must be less than 5MB');
+            return;
+        }
+        
+        setCvUploading(true);
+        
+        try {
+            // Upload to Cloudinary
+            const { url } = await uploadToCloudinary(file);
+            
+            setCvUrl(url);
+            setFormData(prev => ({
+                ...prev,
+                cv_url: url
+            }));
+            
+            alert('CV uploaded successfully!');
+        } catch (error) {
+            console.error('CV upload error:', error);
+            alert('Failed to upload CV. Please try again.');
+        } finally {
+            setCvUploading(false);
+        }
+    };
+
+    const removeCVFile = () => {
+        setCvUrl('');
+        setFormData(prev => ({
+            ...prev,
+            cv_url: ''
+        }));
+    };
+
+    // ============================================================================
+    // PROFESSION HANDLERS
+    // ============================================================================
+
     const handleProfessionSelect = async (profession) => {
         const newPath = [...selectedPath, profession];
         setSelectedPath(newPath);
 
-        // Check if this profession has children
         const children = professions.filter(p => p.parent_id === profession.id);
 
         if (children.length > 0) {
-            // Show next level
             setProfessionHierarchy(children);
             setCurrentLevel(currentLevel + 1);
         } else {
-            // This is a leaf node - final selection
             setFormData({ ...formData, profession_id: profession.id });
 
-            // Check if this profession requires specialty info
             if (profession.requires_specialty) {
                 setShowSpecialtyInput(true);
             } else {
@@ -201,7 +259,6 @@ const PortfolioBuilder = () => {
         }
     };
 
-    // NEW: Go back in profession hierarchy
     const handleProfessionBack = () => {
         if (currentLevel === 1) return;
 
@@ -210,18 +267,15 @@ const PortfolioBuilder = () => {
         setCurrentLevel(currentLevel - 1);
 
         if (newPath.length === 0) {
-            // Back to root
             const rootProfessions = professions.filter(p => p.level === 1);
             setProfessionHierarchy(rootProfessions);
         } else {
-            // Get children of previous selection
             const parentId = newPath[newPath.length - 1].id;
             const siblings = professions.filter(p => p.parent_id === parentId);
             setProfessionHierarchy(siblings);
         }
     };
 
-    // NEW: Handle specialty input submission
     const handleSpecialtySubmit = () => {
         const selectedProfession = professions.find(p => p.id === formData.profession_id);
 
@@ -241,11 +295,14 @@ const PortfolioBuilder = () => {
         setStep(2);
     };
 
+    // ============================================================================
+    // IMAGE UPLOAD HANDLERS
+    // ============================================================================
+
     const handleImageUpload = async (e, type) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        // Validate square image for profile
         if (type === 'profile') {
             const img = new Image();
             img.onload = async () => {
@@ -274,6 +331,10 @@ const PortfolioBuilder = () => {
             img.src = URL.createObjectURL(file);
         }
     };
+
+    // ============================================================================
+    // CONTENT MANAGEMENT HANDLERS
+    // ============================================================================
 
     const handleAddSkill = () => {
         if (!currentSkill.trim()) return;
@@ -379,14 +440,19 @@ const PortfolioBuilder = () => {
         });
     };
 
+    // ============================================================================
+    // SAVE & PUBLISH HANDLERS
+    // ============================================================================
+
     const handleSaveDraft = async () => {
         setLoading(true);
         try {
             const portfolioData = {
                 user_id: user.id,
                 profession_id: formData.profession_id,
-                theme_id: mapThemeIdToDatabase(formData.theme_id), // FIXED: Convert to numeric
+                theme_id: mapThemeIdToDatabase(formData.theme_id),
                 username: formData.username,
+                cv_url: cvUrl || null, // Include CV URL
                 specialty_info: formData.specialty_info,
                 content: formData.content,
                 images: formData.images,
@@ -434,8 +500,9 @@ const PortfolioBuilder = () => {
             const portfolioData = {
                 user_id: user.id,
                 profession_id: formData.profession_id,
-                theme_id: mapThemeIdToDatabase(formData.theme_id), // FIXED: Convert to numeric
+                theme_id: mapThemeIdToDatabase(formData.theme_id),
                 username: formData.username,
+                cv_url: cvUrl || null, // Include CV URL
                 specialty_info: formData.specialty_info,
                 content: formData.content,
                 images: formData.images,
@@ -483,6 +550,10 @@ const PortfolioBuilder = () => {
         }
     };
 
+    // ============================================================================
+    // UTILITY FUNCTIONS
+    // ============================================================================
+
     const getProfessionClassName = (professionId) => {
         return 'profession-card' + (formData.profession_id === professionId ? ' selected' : '');
     };
@@ -505,7 +576,6 @@ const PortfolioBuilder = () => {
         return 'image-upload-box' + (hasImage ? ' has-image' : '');
     };
 
-    // Render profession breadcrumb
     const renderBreadcrumb = () => {
         if (selectedPath.length === 0) return null;
 
@@ -520,6 +590,10 @@ const PortfolioBuilder = () => {
             </div>
         );
     };
+
+    // ============================================================================
+    // RENDER
+    // ============================================================================
 
     return (
         <div className="portfolio-builder">
@@ -562,7 +636,7 @@ const PortfolioBuilder = () => {
                     </div>
                 </div>
 
-                {/* STEP 1: Profession Selection with Hierarchy */}
+                {/* STEP 1: Profession Selection */}
                 {step === 1 && !showSpecialtyInput && (
                     <div className="step-content">
                         <h2>Choose Your Profession</h2>
@@ -596,7 +670,7 @@ const PortfolioBuilder = () => {
                     </div>
                 )}
 
-                {/* STEP 1.5: Specialty Input (for Doctor/Teacher) */}
+                {/* STEP 1.5: Specialty Input */}
                 {step === 1 && showSpecialtyInput && (
                     <div className="step-content">
                         <h2>Additional Information</h2>
@@ -698,7 +772,7 @@ const PortfolioBuilder = () => {
                     <div className="step-content">
                         <h2>Pick Your Style</h2>
                         <p className="step-description">
-                            Choose a theme that represents your personality and profession. Premium themes require credits.
+                            Choose a theme that represents your personality and profession.
                         </p>
                         <div className="theme-grid">
                             {themes.map((theme) => {
@@ -715,7 +789,6 @@ const PortfolioBuilder = () => {
                                                 alert('Premium themes require credits. Please purchase credits first.');
                                                 return;
                                             }
-                                            // FIXED: Map string ID to numeric ID before saving
                                             setFormData({ ...formData, theme_id: mapThemeIdToDatabase(theme.id) });
                                             setStep(3);
                                         }}
@@ -739,7 +812,7 @@ const PortfolioBuilder = () => {
                     </div>
                 )}
 
-                {/* STEP 3: Content (continues with same content as before...) */}
+                {/* STEP 3: Content */}
                 {step === 3 && (
                     <div className="step-content">
                         <h2>Build Your Portfolio</h2>
@@ -747,7 +820,72 @@ const PortfolioBuilder = () => {
                             Fill in your details to create a stunning, professional portfolio.
                         </p>
 
-                        {/* Profile Image ONLY - NO BANNER */}
+                        {/* CV Upload Section - NEW */}
+                        <div className="form-section">
+                            <h3>
+                                <span className="section-icon">📄</span>
+                                Resume / CV
+                            </h3>
+                            <p className="step-description" style={{ marginBottom: '1rem' }}>
+                                Upload your resume/CV (PDF only, max 5MB). This will appear as a download button in your portfolio.
+                            </p>
+                            
+                            <div className="cv-upload-container">
+                                {!cvUrl ? (
+                                    <div className="upload-area">
+                                        <input
+                                            type="file"
+                                            id="cv-upload"
+                                            accept=".pdf,application/pdf"
+                                            onChange={handleCVUpload}
+                                            disabled={cvUploading}
+                                            style={{ display: 'none' }}
+                                        />
+                                        <label htmlFor="cv-upload" className="upload-label">
+                                            {cvUploading ? (
+                                                <>
+                                                    <div className="spinner-small"></div>
+                                                    <span>Uploading CV...</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Upload size={24} />
+                                                    <span>Click to upload CV (PDF)</span>
+                                                </>
+                                            )}
+                                        </label>
+                                    </div>
+                                ) : (
+                                    <div className="cv-uploaded">
+                                        <div className="cv-info">
+                                            <FileText size={20} />
+                                            <span>CV uploaded successfully!</span>
+                                        </div>
+                                        <div className="cv-actions">
+                                            <a 
+                                                href={cvUrl} 
+                                                target="_blank" 
+                                                rel="noopener noreferrer"
+                                                className="btn-view-cv"
+                                            >
+                                                <Eye size={16} />
+                                                Preview
+                                            </a>
+                                            <button 
+                                                type="button"
+                                                onClick={removeCVFile}
+                                                className="btn-remove-cv"
+                                            >
+                                                <X size={16} />
+                                                Remove
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Profile Image */}
                         <div className="form-section">
                             <h3>
                                 <span className="section-icon">📸</span>

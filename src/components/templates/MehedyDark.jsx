@@ -1,437 +1,289 @@
-/**
- * ============================================================================
- * MEHEDY DARK TEMPLATE
- * Clean, professional dark theme based on mehedy.netlify.app dark mode
- * ============================================================================
- */
-
-import React, { useState, useEffect } from 'react';
-import { downloadCV } from '../../utils/cvDownload';
+import React, { useState } from 'react';
+import { Download, Mail, Phone, MapPin, Moon, Sun, Github, Linkedin, Twitter, Globe, Briefcase, GraduationCap, Award, Code } from 'lucide-react';
 import './MehedyDark.css';
 
 const MehedyDark = ({ portfolio, content, images, specialty_info, onToggleTheme, isDarkMode }) => {
-    const [showScrollTop, setShowScrollTop] = useState(false);
-    const [scrolled, setScrolled] = useState(false);
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const [activeSection, setActiveSection] = useState('home');
+    const [activeSection, setActiveSection] = useState('about');
 
-    const handleDownloadCV = () => {
-        downloadCV(portfolio, content, images, specialty_info);
-    };
+    const userProfile = portfolio?.user_profiles || {};
+    const profession = portfolio?.professions?.name || 'Professional';
+    const cvUrl = portfolio?.cv_url || content?.cv_url;
 
-    useEffect(() => {
-        const handleScroll = () => {
-            setShowScrollTop(window.scrollY > 300);
-            setScrolled(window.scrollY > 50); // For nav bar scroll effect
-        };
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
-
-    const scrollToTop = () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
-    const scrollToSection = (e, sectionId) => {
-        e.preventDefault();
+    const scrollToSection = (sectionId) => {
+        setActiveSection(sectionId);
         const element = document.getElementById(sectionId);
         if (element) {
             element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            setActiveSection(sectionId);
-            setMobileMenuOpen(false); // Close mobile menu on section click
+        }
+    };
+
+    const handleDownloadCV = () => {
+        if (cvUrl) {
+            window.open(cvUrl, '_blank');
+        } else {
+            alert('CV not available');
         }
     };
 
     return (
-        <div className="mehedy-dark-template">
+        <div className="mehedy-dark-portfolio">
             {/* Navigation */}
-            <nav className={`md-nav ${scrolled ? 'scrolled' : ''}`}>
-                <div className="md-container md-nav-content">
-                    <div className="md-nav-brand">
-                        {portfolio?.user_profiles?.full_name || 'Portfolio'}
+            <nav className="portfolio-nav">
+                <div className="nav-container">
+                    <div className="nav-brand">
+                        {userProfile.full_name || 'Portfolio'}
                     </div>
-                    <div className="md-nav-links desktop">
-                        <a href="#about" onClick={(e) => scrollToSection(e, 'about')} className={activeSection === 'about' ? 'active' : ''}>About</a>
-                        {content.skills?.length > 0 && (
-                            <a href="#skills" onClick={(e) => scrollToSection(e, 'skills')} className={activeSection === 'skills' ? 'active' : ''}>Skills</a>
+                    
+                    <div className="nav-links">
+                        <a href="#about" onClick={(e) => { e.preventDefault(); scrollToSection('about'); }}>About</a>
+                        <a href="#skills" onClick={(e) => { e.preventDefault(); scrollToSection('skills'); }}>Skills</a>
+                        <a href="#experience" onClick={(e) => { e.preventDefault(); scrollToSection('experience'); }}>Experience</a>
+                        <a href="#projects" onClick={(e) => { e.preventDefault(); scrollToSection('projects'); }}>Projects</a>
+                        <a href="#contact" onClick={(e) => { e.preventDefault(); scrollToSection('contact'); }}>Contact</a>
+                        
+                        {/* Download CV in Nav */}
+                        {cvUrl && (
+                            <button className="nav-cv-btn" onClick={handleDownloadCV}>
+                                <Download size={16} />
+                                <span>CV</span>
+                            </button>
                         )}
-                        {content.experience?.length > 0 && (
-                            <a href="#journey" onClick={(e) => scrollToSection(e, 'journey')} className={activeSection === 'journey' ? 'active' : ''}>Journey</a>
-                        )}
-                        {content.projects?.length > 0 && (
-                            <a href="#projects" onClick={(e) => scrollToSection(e, 'projects')} className={activeSection === 'projects' ? 'active' : ''}>Projects</a>
-                        )}
-                        {content.services?.length > 0 && (
-                            <a href="#services" onClick={(e) => scrollToSection(e, 'services')} className={activeSection === 'services' ? 'active' : ''}>Services</a>
-                        )}
-                        <a href="#contact" onClick={(e) => scrollToSection(e, 'contact')} className={`md-btn-primary ${activeSection === 'contact' ? 'active' : ''}`}>Hire Me</a>
-
-                        {/* Theme Toggle Button */}
-                        <button
-                            onClick={onToggleTheme}
-                            className="theme-toggle-btn"
-                            aria-label="Toggle Light Mode"
-                            style={{
-                                background: 'transparent',
-                                border: '1px solid var(--md-border)',
-                                borderRadius: '50%',
-                                width: '40px',
-                                height: '40px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                cursor: 'pointer',
-                                marginLeft: '1rem',
-                                fontSize: '1.2rem',
-                                color: 'var(--md-text-primary)',
-                                transition: 'all 0.3s ease'
-                            }}
-                        >
-                            {isDarkMode ? '☀️' : '🌙'}
+                        
+                        <button className="theme-toggle" onClick={onToggleTheme}>
+                            {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
                         </button>
-                    </div>
-
-                    <div className="md-mobile-toggle" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-                        <span></span>
-                        <span></span>
-                        <span></span>
                     </div>
                 </div>
             </nav>
 
-            {/* Mobile Navigation Menu */}
-            {mobileMenuOpen && (
-                <div className="md-mobile-menu">
-                    <a href="#about" onClick={(e) => scrollToSection(e, 'about')} className={activeSection === 'about' ? 'active' : ''}>About</a>
-                    {content?.skills?.length > 0 && (
-                        <a href="#skills" onClick={(e) => scrollToSection(e, 'skills')} className={activeSection === 'skills' ? 'active' : ''}>Skills</a>
-                    )}
-                    {content?.experience?.length > 0 && (
-                        <a href="#journey" onClick={(e) => scrollToSection(e, 'journey')} className={activeSection === 'journey' ? 'active' : ''}>Journey</a>
-                    )}
-                    {content?.projects?.length > 0 && (
-                        <a href="#projects" onClick={(e) => scrollToSection(e, 'projects')} className={activeSection === 'projects' ? 'active' : ''}>Projects</a>
-                    )}
-                    <a href="#services" onClick={(e) => scrollToSection(e, 'services')} className={activeSection === 'services' ? 'active' : ''}>Services</a>
-                    <a href="#contact" onClick={(e) => scrollToSection(e, 'contact')} className={`md-btn-primary ${activeSection === 'contact' ? 'active' : ''}`}>Hire Me</a>
-
-                    <button
-                        onClick={onToggleTheme}
-                        className="theme-toggle-btn"
-                        aria-label="Toggle Light Mode"
-                        style={{
-                            background: 'transparent',
-                            border: '1px solid var(--md-border)',
-                            borderRadius: '50%',
-                            width: '40px',
-                            height: '40px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: 'pointer',
-                            marginTop: '1rem',
-                            fontSize: '1.2rem',
-                            color: 'var(--md-text-primary)',
-                            transition: 'all 0.3s ease'
-                        }}
-                    >
-                        {isDarkMode ? '☀️' : '🌙'}
-                    </button>
-                </div>
-            )}
-
-            {/* Hero Section */}
-            <section className="md-hero">
-                <div className="md-container">
-                    <div className="md-hero-content">
-                        {/* Profile Image */}
-                        {images?.profile && (
-                            <div className="md-profile-wrapper">
-                                <img
-                                    src={images.profile}
-                                    alt={portfolio?.user_profiles?.full_name}
-                                    className="md-profile-image"
-                                />
-                            </div>
-                        )}
-
-                        {/* Name and Title */}
-                        <h1 className="md-hero-name">
-                            {portfolio?.user_profiles?.full_name || 'Your Name'}
-                        </h1>
-                        <p className="md-hero-title">
-                            {portfolio?.professions?.name || 'Professional'}
-                        </p>
-
-                        {/* Social Links */}
-                        <div className="md-social-links">
-                            {content?.contact?.linkedin && (
-                                <a href={content.contact.linkedin} target="_blank" rel="noopener noreferrer" className="md-social-link">
-                                    in
-                                </a>
-                            )}
-                            {content?.contact?.github && (
-                                <a href={content.contact.github} target="_blank" rel="noopener noreferrer" className="md-social-link">
-                                    gh
-                                </a>
-                            )}
-                            {content?.contact?.email && (
-                                <a href={`mailto:${content.contact.email}`} className="md-social-link">
-                                    @
-                                </a>
-                            )}
-                            {content?.contact?.website && (
-                                <a href={content.contact.website} target="_blank" rel="noopener noreferrer" className="md-social-link">
-                                    🌐
-                                </a>
-                            )}
-                        </div>
-
-                        {/* Stats */}
-                        <div className="md-stats">
-                            <div className="md-stat-item">
-                                <div className="md-stat-number">
-                                    {content?.experience?.length || 0}+
-                                </div>
-                                <div className="md-stat-label">Years Experience</div>
-                            </div>
-                            <div className="md-stat-item">
-                                <div className="md-stat-number">
-                                    {content?.projects?.length || 0}+
-                                </div>
-                                <div className="md-stat-label">Projects Done</div>
-                            </div>
-                            <div className="md-stat-item">
-                                <div className="md-stat-number">
-                                    {portfolio?.view_count || 0}
-                                </div>
-                                <div className="md-stat-label">Portfolio Views</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* About Me Section */}
-            <section id="about" className="md-section">
-                <div className="md-container">
-                    <h2 className="md-section-title">ABOUT ME</h2>
-                    <div className="md-about-content">
-                        <p className="md-about-text">
-                            {content?.about || 'No information provided yet.'}
-                        </p>
-                    </div>
-                </div>
-            </section>
-
-            {/* My Journey Section (Experience Timeline) */}
-            {content?.experience && content.experience.length > 0 && (
-                <section id="journey" className="md-section md-section-alt">
-                    <div className="md-container">
-                        <h2 className="md-section-title">MY JOURNEY</h2>
-                        <div className="md-timeline">
-                            {content.experience.map((exp, index) => (
-                                <div key={index} className="md-timeline-item">
-                                    <div className="md-timeline-dot"></div>
-                                    <div className="md-timeline-content">
-                                        <div className="md-timeline-year">{exp.duration || 'Date'}</div>
-                                        <h3 className="md-timeline-title">{exp.position}</h3>
-                                        <p className="md-timeline-company">{exp.company}</p>
-                                        <p className="md-timeline-desc">{exp.description}</p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </section>
-            )}
-
-            {/* Skills & Expertise Section */}
-            {content?.skills && content.skills.length > 0 && (
-                <section id="skills" className="md-section">
-                    <div className="md-container">
-                        <h2 className="md-section-title">SKILLS & EXPERTISE</h2>
-                        <div className="md-skills-grid">
-                            {content.skills.map((skill, index) => (
-                                <div key={index} className="md-skill-badge">
-                                    {skill}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </section>
-            )}
-
-            {/* Featured Projects Section */}
-            {content?.projects && content.projects.length > 0 && (
-                <section id="projects" className="md-section md-section-alt">
-                    <div className="md-container">
-                        <h2 className="md-section-title">FEATURED PROJECTS</h2>
-                        <div className="md-projects-grid">
-                            {content.projects.map((project, index) => (
-                                <div key={index} className="md-project-card">
-                                    <div className="md-project-header">
-                                        <h3 className="md-project-title">{project.title}</h3>
-                                        {project.link && (
-                                            <a
-                                                href={project.link}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="md-project-link"
-                                            >
-                                                →
-                                            </a>
-                                        )}
-                                    </div>
-                                    <p className="md-project-desc">{project.description}</p>
-                                    {project.technologies && (
-                                        <div className="md-project-tech">
-                                            {project.technologies.split(',').map((tech, i) => (
-                                                <span key={i} className="md-tech-tag">
-                                                    {tech.trim()}
-                                                </span>
-                                            ))}
+            {/* Hero Section - Hexagonal Profile on Left */}
+            <section className="hero-section" id="about">
+                <div className="hero-container">
+                    <div className="hero-content">
+                        {/* Left: Hexagonal Profile Photo */}
+                        <div className="hero-left">
+                            <div className="hexagon-wrapper">
+                                <div className="hexagon-profile">
+                                    {images?.profile ? (
+                                        <img src={images.profile} alt={userProfile.full_name} />
+                                    ) : (
+                                        <div className="profile-placeholder">
+                                            {userProfile.full_name?.charAt(0) || 'P'}
                                         </div>
                                     )}
                                 </div>
-                            ))}
+                            </div>
                         </div>
-                    </div>
-                </section>
-            )}
 
-            {/* Services Section (if doctor - show booking) */}
-            <section id="services" className="md-section">
-                <div className="md-container">
-                    <h2 className="md-section-title">SERVICES</h2>
+                        {/* Right: Name, Profession, Bio */}
+                        <div className="hero-right">
+                            <div className="hero-greeting">Hello, I'm</div>
+                            <h1 className="hero-name">{userProfile.full_name || 'Portfolio Owner'}</h1>
+                            <div className="hero-profession">{profession}</div>
+                            
+                            <p className="hero-bio">
+                                {content?.about || 'Welcome to my portfolio. I am passionate about creating amazing experiences.'}
+                            </p>
 
-                    {/* Doctor Booking Section */}
-                    {specialty_info?.booking_email && (
-                        <div className="md-booking-card">
-                            <h3>Book a Session</h3>
-                            {specialty_info.doctor_type && (
-                                <p className="md-specialty">
-                                    Specialty: {specialty_info.doctor_type}
-                                </p>
+                            <div className="hero-actions">
+                                <a href="#contact" className="btn-primary" onClick={(e) => { e.preventDefault(); scrollToSection('contact'); }}>
+                                    <Mail size={18} />
+                                    Get in Touch
+                                </a>
+                                
+                                {cvUrl && (
+                                    <button className="btn-secondary" onClick={handleDownloadCV}>
+                                        <Download size={18} />
+                                        Download CV
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Social Links */}
+                            {content?.contact && (
+                                <div className="hero-socials">
+                                    {content.contact.github && (
+                                        <a href={content.contact.github} target="_blank" rel="noopener noreferrer" title="GitHub">
+                                            <Github size={20} />
+                                        </a>
+                                    )}
+                                    {content.contact.linkedin && (
+                                        <a href={content.contact.linkedin} target="_blank" rel="noopener noreferrer" title="LinkedIn">
+                                            <Linkedin size={20} />
+                                        </a>
+                                    )}
+                                    {content.contact.twitter && (
+                                        <a href={content.contact.twitter} target="_blank" rel="noopener noreferrer" title="Twitter">
+                                            <Twitter size={20} />
+                                        </a>
+                                    )}
+                                    {content.contact.website && (
+                                        <a href={content.contact.website} target="_blank" rel="noopener noreferrer" title="Website">
+                                            <Globe size={20} />
+                                        </a>
+                                    )}
+                                </div>
                             )}
-                            <a
-                                href={`mailto:${specialty_info.booking_email}?subject=Appointment Request&body=Hello, I would like to schedule an appointment.`}
-                                className="md-book-btn"
-                            >
-                                Schedule Appointment
-                            </a>
-                        </div>
-                    )}
-
-                    {/* Generic Services */}
-                    <div className="md-services-grid">
-                        <div className="md-service-card">
-                            <h3>Consultation</h3>
-                            <p>Professional consultation services</p>
-                        </div>
-                        <div className="md-service-card">
-                            <h3>Collaboration</h3>
-                            <p>Open to collaborative projects</p>
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* Blog & Insights Section (Education) */}
-            {content?.education && content.education.length > 0 && (
-                <section className="md-section md-section-alt">
-                    <div className="md-container">
-                        <h2 className="md-section-title">EDUCATION & CREDENTIALS</h2>
-                        <div className="md-education-grid">
-                            {content.education.map((edu, index) => (
-                                <div key={index} className="md-education-card">
-                                    <div className="md-edu-year">{edu.year}</div>
-                                    <h3 className="md-edu-degree">{edu.degree}</h3>
-                                    <p className="md-edu-institution">{edu.institution}</p>
-                                    {edu.description && (
-                                        <p className="md-edu-desc">{edu.description}</p>
+            {/* Skills Section */}
+            <section className="skills-section" id="skills">
+                <div className="section-container">
+                    <div className="section-header">
+                        <Code className="section-icon" />
+                        <h2>Skills & Expertise</h2>
+                    </div>
+                    
+                    <div className="skills-grid">
+                        {content?.skills && content.skills.length > 0 ? (
+                            content.skills.map((skill, index) => (
+                                <div key={index} className="skill-card">
+                                    <div className="skill-name">{skill.name || skill}</div>
+                                    {skill.level && (
+                                        <div className="skill-level">
+                                            <div className="skill-bar">
+                                                <div 
+                                                    className="skill-progress" 
+                                                    style={{ width: `${skill.level}%` }}
+                                                ></div>
+                                            </div>
+                                            <span className="skill-percent">{skill.level}%</span>
+                                        </div>
                                     )}
                                 </div>
-                            ))}
-                        </div>
+                            ))
+                        ) : (
+                            <p className="no-content">No skills added yet.</p>
+                        )}
                     </div>
-                </section>
-            )}
+                </div>
+            </section>
 
-            {/* Get In Touch Section */}
-            <section id="contact" className="md-section md-contact-section">
-                <div className="md-container">
-                    <h2 className="md-section-title">GET IN TOUCH</h2>
-                    <div className="md-contact-content">
-                        <p className="md-contact-intro">
-                            Let's connect and discuss how we can work together.
+            {/* Experience Section */}
+            <section className="experience-section" id="experience">
+                <div className="section-container">
+                    <div className="section-header">
+                        <Briefcase className="section-icon" />
+                        <h2>Work Experience</h2>
+                    </div>
+
+                    <div className="timeline">
+                        {content?.experience && content.experience.length > 0 ? (
+                            content.experience.map((exp, index) => (
+                                <div key={index} className="timeline-item">
+                                    <div className="timeline-marker"></div>
+                                    <div className="timeline-content">
+                                        <div className="timeline-header">
+                                            <h3>{exp.position || exp.title}</h3>
+                                            <span className="timeline-date">{exp.duration || exp.period}</span>
+                                        </div>
+                                        <div className="timeline-company">{exp.company}</div>
+                                        {exp.description && <p className="timeline-desc">{exp.description}</p>}
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="no-content">No experience added yet.</p>
+                        )}
+                    </div>
+                </div>
+            </section>
+
+            {/* Projects Section */}
+            <section className="projects-section" id="projects">
+                <div className="section-container">
+                    <div className="section-header">
+                        <Award className="section-icon" />
+                        <h2>Featured Projects</h2>
+                    </div>
+
+                    <div className="projects-grid">
+                        {content?.projects && content.projects.length > 0 ? (
+                            content.projects.map((project, index) => (
+                                <div key={index} className="project-card">
+                                    {project.image && (
+                                        <div className="project-image">
+                                            <img src={project.image} alt={project.name} />
+                                        </div>
+                                    )}
+                                    <div className="project-content">
+                                        <h3>{project.name || project.title}</h3>
+                                        <p>{project.description}</p>
+                                        {project.technologies && (
+                                            <div className="project-tags">
+                                                {project.technologies.map((tech, i) => (
+                                                    <span key={i} className="tag">{tech}</span>
+                                                ))}
+                                            </div>
+                                        )}
+                                        {(project.liveUrl || project.githubUrl) && (
+                                            <div className="project-links">
+                                                {project.liveUrl && (
+                                                    <a href={project.liveUrl} target="_blank" rel="noopener noreferrer">
+                                                        <Globe size={16} /> Live Demo
+                                                    </a>
+                                                )}
+                                                {project.githubUrl && (
+                                                    <a href={project.githubUrl} target="_blank" rel="noopener noreferrer">
+                                                        <Github size={16} /> Code
+                                                    </a>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="no-content">No projects added yet.</p>
+                        )}
+                    </div>
+                </div>
+            </section>
+
+            {/* Contact Section */}
+            <section className="contact-section" id="contact">
+                <div className="section-container">
+                    <div className="section-header">
+                        <Mail className="section-icon" />
+                        <h2>Get In Touch</h2>
+                    </div>
+
+                    <div className="contact-content">
+                        <p className="contact-intro">
+                            Interested in working together? Feel free to reach out!
                         </p>
 
-                        <div className="md-contact-methods">
+                        <div className="contact-info">
                             {content?.contact?.email && (
-                                <div className="md-contact-method">
-                                    <span className="md-contact-label">Email</span>
-                                    <a href={`mailto:${content.contact.email}`} className="md-contact-value">
-                                        {content.contact.email}
-                                    </a>
-                                </div>
+                                <a href={`mailto:${content.contact.email}`} className="contact-item">
+                                    <Mail size={20} />
+                                    <span>{content.contact.email}</span>
+                                </a>
                             )}
                             {content?.contact?.phone && (
-                                <div className="md-contact-method">
-                                    <span className="md-contact-label">Phone</span>
-                                    <a href={`tel:${content.contact.phone}`} className="md-contact-value">
-                                        {content.contact.phone}
-                                    </a>
+                                <a href={`tel:${content.contact.phone}`} className="contact-item">
+                                    <Phone size={20} />
+                                    <span>{content.contact.phone}</span>
+                                </a>
+                            )}
+                            {content?.contact?.location && (
+                                <div className="contact-item">
+                                    <MapPin size={20} />
+                                    <span>{content.contact.location}</span>
                                 </div>
                             )}
-                            {content?.contact?.linkedin && (
-                                <div className="md-contact-method">
-                                    <span className="md-contact-label">LinkedIn</span>
-                                    <a href={content.contact.linkedin} target="_blank" rel="noopener noreferrer" className="md-contact-value">
-                                        Connect with me
-                                    </a>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Download CV Button */}
-                        <div className="md-cv-download">
-                            <button className="md-download-cv-btn" onClick={handleDownloadCV}>
-                                Download CV
-                            </button>
                         </div>
                     </div>
                 </div>
             </section>
 
             {/* Footer */}
-            <footer className="md-footer">
-                <div className="md-container">
-                    <div className="md-footer-content">
-                        <p className="md-footer-text">
-                            © {new Date().getFullYear()} {portfolio?.user_profiles?.full_name}. Built with Portfolio Builder.
-                        </p>
-                        <div className="md-footer-social">
-                            {content?.contact?.linkedin && (
-                                <a href={content.contact.linkedin} target="_blank" rel="noopener noreferrer">in</a>
-                            )}
-                            {content?.contact?.github && (
-                                <a href={content.contact.github} target="_blank" rel="noopener noreferrer">gh</a>
-                            )}
-                            {content?.contact?.email && (
-                                <a href={`mailto:${content.contact.email}`}>@</a>
-                            )}
-                        </div>
-                    </div>
-                </div>
+            <footer className="portfolio-footer">
+                <p>© {new Date().getFullYear()} {userProfile.full_name}. All rights reserved.</p>
             </footer>
-
-            {/* Scroll to Top Button */}
-            {showScrollTop && (
-                <button className="md-scroll-top" onClick={scrollToTop}>
-                    ↑
-                </button>
-            )}
         </div>
     );
 };
