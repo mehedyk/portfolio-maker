@@ -1,11 +1,12 @@
 /* ============================================================================
-   MEHEDY LIGHT - MODERN PORTFOLIO TEMPLATE
-   Features: Hexagonal Profile, Compact Spacing, Professional Design
+   MEHEDY LIGHT - FIXED VERSION
+   NO YELLOW COLORS - Proper contrast - Clean professional design
    ============================================================================ */
 
 :root {
     --primary: #2563eb;
     --primary-dark: #1d4ed8;
+    --primary-light: #3b82f6;
     --secondary: #64748b;
     --text: #1e293b;
     --text-light: #64748b;
@@ -32,7 +33,7 @@
 }
 
 /* ============================================================================
-   NAVIGATION - COMPACT & STICKY
+   NAVIGATION - FIXED: Clean, professional
    ============================================================================ */
 
 .portfolio-nav {
@@ -117,7 +118,7 @@
 }
 
 /* ============================================================================
-   HERO SECTION - HEXAGONAL PROFILE ON LEFT
+   HERO SECTION - FIXED: Hexagonal profile, proper spacing
    ============================================================================ */
 
 .hero-section {
@@ -206,10 +207,6 @@
     margin-bottom: 1rem;
     text-transform: uppercase;
     letter-spacing: 1px;
-    background: linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
 }
 
 .hero-bio {

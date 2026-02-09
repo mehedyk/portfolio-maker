@@ -1,16 +1,19 @@
 /* ============================================================================
-   MEHEDY DARK - MODERN PORTFOLIO TEMPLATE
-   Features: Hexagonal Profile, Compact Spacing, Dark Theme
+   MEHEDY DARK - FIXED VERSION
+   NO YELLOW COLORS - Proper contrast - Readable text everywhere
    ============================================================================ */
 
 :root {
     --primary: #3b82f6;
     --primary-dark: #2563eb;
+    --primary-light: #60a5fa;
     --secondary: #94a3b8;
     --text: #f1f5f9;
     --text-light: #cbd5e1;
+    --text-lighter: #94a3b8;
     --bg: #0f172a;
     --bg-alt: #1e293b;
+    --bg-card: #1e293b;
     --border: #334155;
     --shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.4);
@@ -32,7 +35,7 @@
 }
 
 /* ============================================================================
-   NAVIGATION - COMPACT & STICKY
+   NAVIGATION - FIXED: Proper contrast, visible text
    ============================================================================ */
 
 .portfolio-nav {
@@ -67,7 +70,7 @@
 }
 
 .nav-links a {
-    color: var(--text);
+    color: var(--text-light);
     text-decoration: none;
     font-size: 0.95rem;
     font-weight: 500;
@@ -110,21 +113,22 @@
     justify-content: center;
     cursor: pointer;
     transition: var(--transition);
-    color: var(--text);
+    color: var(--text-light);
 }
 
 .theme-toggle:hover {
     background: var(--border);
+    color: var(--primary);
     transform: scale(1.05);
 }
 
 /* ============================================================================
-   HERO SECTION - HEXAGONAL PROFILE ON LEFT
+   HERO SECTION - FIXED: Visible text, proper spacing
    ============================================================================ */
 
 .hero-section {
     padding: 3rem 0 2rem;
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    background: var(--bg);
 }
 
 .hero-container {
@@ -139,7 +143,7 @@
     gap: 3rem;
 }
 
-/* Hexagonal Profile Photo - LEFT SIDE */
+/* Hexagonal Profile Photo */
 .hero-left {
     flex-shrink: 0;
 }
@@ -177,14 +181,14 @@
     color: white;
 }
 
-/* Text Content - RIGHT SIDE */
+/* Text Content - FIXED: All text is now white/light for visibility */
 .hero-right {
     flex: 1;
 }
 
 .hero-greeting {
     font-size: 1.1rem;
-    color: var(--primary);
+    color: var(--primary-light);
     font-weight: 600;
     margin-bottom: 0.5rem;
 }
@@ -195,23 +199,15 @@
     color: var(--text);
     line-height: 1.1;
     margin-bottom: 0.75rem;
-    background: linear-gradient(135deg, var(--text) 0%, var(--primary) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
 }
 
 .hero-profession {
     font-size: 1.8rem;
     font-weight: 700;
-    color: var(--primary);
+    color: var(--primary-light);
     margin-bottom: 1rem;
     text-transform: uppercase;
     letter-spacing: 1px;
-    background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
 }
 
 .hero-bio {
@@ -256,7 +252,7 @@
 
 .btn-secondary {
     background: transparent;
-    color: var(--primary);
+    color: var(--primary-light);
     border: 2px solid var(--primary);
 }
 
@@ -279,7 +275,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--text);
+    color: var(--text-light);
     transition: var(--transition);
 }
 
@@ -291,7 +287,7 @@
 }
 
 /* ============================================================================
-   SECTIONS - COMPACT SPACING
+   SECTIONS - FIXED: Readable text throughout
    ============================================================================ */
 
 .skills-section,
@@ -327,7 +323,7 @@
 }
 
 /* ============================================================================
-   SKILLS - COMPACT GRID
+   SKILLS - FIXED: No yellow, proper contrast
    ============================================================================ */
 
 .skills-grid {
@@ -337,7 +333,7 @@
 }
 
 .skill-card {
-    background: var(--bg-alt);
+    background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 1rem;
@@ -381,12 +377,12 @@
 .skill-percent {
     font-size: 0.85rem;
     font-weight: 600;
-    color: var(--primary);
+    color: var(--primary-light);
     min-width: 40px;
 }
 
 /* ============================================================================
-   EXPERIENCE - COMPACT TIMELINE
+   EXPERIENCE - FIXED: Readable text
    ============================================================================ */
 
 .timeline {
@@ -426,7 +422,7 @@
 }
 
 .timeline-content {
-    background: var(--bg-alt);
+    background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 1.25rem;
@@ -454,7 +450,7 @@
 
 .timeline-date {
     font-size: 0.9rem;
-    color: var(--primary);
+    color: var(--primary-light);
     font-weight: 500;
 }
 
@@ -472,7 +468,7 @@
 }
 
 /* ============================================================================
-   PROJECTS - COMPACT CARDS
+   PROJECTS - FIXED: No yellow, proper card styling
    ============================================================================ */
 
 .projects-grid {
@@ -482,7 +478,7 @@
 }
 
 .project-card {
-    background: var(--bg-alt);
+    background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: 12px;
     overflow: hidden;
@@ -540,7 +536,7 @@
 
 .tag {
     background: var(--bg);
-    color: var(--primary);
+    color: var(--primary-light);
     padding: 0.25rem 0.75rem;
     border-radius: 20px;
     font-size: 0.85rem;
@@ -557,7 +553,7 @@
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    color: var(--primary);
+    color: var(--primary-light);
     text-decoration: none;
     font-size: 0.9rem;
     font-weight: 500;
@@ -565,11 +561,12 @@
 }
 
 .project-links a:hover {
+    color: var(--primary);
     gap: 0.6rem;
 }
 
 /* ============================================================================
-   CONTACT - COMPACT
+   CONTACT - FIXED: Visible text
    ============================================================================ */
 
 .contact-section {
@@ -596,7 +593,7 @@
     align-items: center;
     gap: 1rem;
     padding: 1rem;
-    background: var(--bg);
+    background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: 8px;
     color: var(--text);

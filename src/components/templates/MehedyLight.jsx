@@ -3,7 +3,6 @@ import { Download, Mail, Phone, MapPin, Moon, Sun, Github, Linkedin, Twitter, Gl
 import './MehedyLight.css';
 
 const MehedyLight = ({ portfolio, content, images, specialty_info, onToggleTheme, isDarkMode }) => {
-
     const userProfile = portfolio?.user_profiles || {};
     const profession = portfolio?.professions?.name || 'Professional';
     const cvUrl = portfolio?.cv_url || content?.cv_url;
@@ -47,7 +46,7 @@ const MehedyLight = ({ portfolio, content, images, specialty_info, onToggleTheme
                             </button>
                         )}
                         
-                        <button className="theme-toggle" onClick={onToggleTheme}>
+                        <button className="theme-toggle" onClick={onToggleTheme} aria-label="Toggle theme">
                             {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
                         </button>
                     </div>
@@ -212,16 +211,16 @@ const MehedyLight = ({ portfolio, content, images, specialty_info, onToggleTheme
                                         <p>{project.description}</p>
                                         {project.technologies && (
                                             <div className="project-tags">
-                                                {project.technologies.map((tech, i) => (
-                                                    <span key={i} className="tag">{tech}</span>
+                                                {project.technologies.split(',').map((tech, i) => (
+                                                    <span key={i} className="tag">{tech.trim()}</span>
                                                 ))}
                                             </div>
                                         )}
-                                        {(project.liveUrl || project.githubUrl) && (
+                                        {(project.liveUrl || project.githubUrl || project.link) && (
                                             <div className="project-links">
-                                                {project.liveUrl && (
-                                                    <a href={project.liveUrl} target="_blank" rel="noopener noreferrer">
-                                                        <Globe size={16} /> Live Demo
+                                                {(project.liveUrl || project.link) && (
+                                                    <a href={project.liveUrl || project.link} target="_blank" rel="noopener noreferrer">
+                                                        <Globe size={16} /> View Project
                                                     </a>
                                                 )}
                                                 {project.githubUrl && (
