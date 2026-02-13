@@ -1,0 +1,18 @@
+/* ============================================================================
+   FOOTER - Elegant & Classy Design
+   ============================================================================ */
+
+.mehedy-dark-portfolio .portfolio-footer {
+    background: linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.9) 50%, rgba(10, 15, 30, 0.95) 100%);
+    border-top: 1px solid rgba(59, 130, 246, 0.1);
+    padding: 3rem 0 2rem;
+    margin-top: 4rem;
+    text-align: center;
+}
+
+.mehedy-dark-portfolio .portfolio-footer p {
+    font-size: 0.9rem;
+    color: var(--text-lighter);
+    font-weight: 400;
+    letter-spacing: 0.5px;
+}

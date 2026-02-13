@@ -42,17 +42,18 @@
 
 
 /* ============================================================================
-   NAVIGATION - FIXED: Proper contrast, visible text
+   NAVIGATION - FIXED: Elegant glassmorphism design
    ============================================================================ */
 
 .portfolio-nav {
     position: sticky;
     top: 0;
-    background: rgba(15, 23, 42, 0.95);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--border);
+    background: rgba(10, 15, 30, 0.85);
+    backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid rgba(59, 130, 246, 0.1);
     z-index: 1000;
     padding: 0.75rem 0;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
 }
 
 .nav-container {
@@ -67,7 +68,10 @@
 .nav-brand {
     font-size: 1.25rem;
     font-weight: 700;
-    color: var(--primary);
+    background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .nav-links {
@@ -82,10 +86,26 @@
     font-size: 0.95rem;
     font-weight: 500;
     transition: var(--transition);
+    position: relative;
+}
+
+.nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+    transition: width 0.3s ease;
 }
 
 .nav-links a:hover {
     color: var(--primary);
+}
+
+.nav-links a:hover::after {
+    width: 100%;
 }
 
 .nav-cv-btn {
@@ -93,7 +113,7 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
-    background: var(--primary);
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
     color: white;
     border: none;
     border-radius: 6px;
@@ -101,12 +121,13 @@
     font-weight: 600;
     cursor: pointer;
     transition: var(--transition);
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
 }
 
 .nav-cv-btn:hover {
-    background: var(--primary-dark);
-    transform: translateY(-1px);
-    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+    background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+    transform: translateY(-1px) scale(1.02);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6), 0 0 30px rgba(139, 92, 246, 0.3);
 }
 
 .theme-toggle {

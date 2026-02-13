@@ -1,5 +1,6 @@
 import React from 'react';
 import { Download, Mail, Phone, MapPin, Moon, Sun, Github, Linkedin, Twitter, Globe, Briefcase, Award, Code } from 'lucide-react';
+import CursorTrail from '../effects/CursorTrail';
 import './MehedyDark.css';
 
 const MehedyDark = ({ portfolio, content, images, specialty_info, onToggleTheme, isDarkMode }) => {
@@ -24,20 +25,21 @@ const MehedyDark = ({ portfolio, content, images, specialty_info, onToggleTheme,
 
     return (
         <div className="mehedy-dark-portfolio">
+            <CursorTrail />
             {/* Navigation */}
             <nav className="portfolio-nav">
                 <div className="nav-container">
                     <div className="nav-brand">
                         {userProfile.full_name || 'Portfolio'}
                     </div>
-                    
+
                     <div className="nav-links">
                         <a href="#about" onClick={(e) => { e.preventDefault(); scrollToSection('about'); }}>About</a>
                         <a href="#skills" onClick={(e) => { e.preventDefault(); scrollToSection('skills'); }}>Skills</a>
                         <a href="#experience" onClick={(e) => { e.preventDefault(); scrollToSection('experience'); }}>Experience</a>
                         <a href="#projects" onClick={(e) => { e.preventDefault(); scrollToSection('projects'); }}>Projects</a>
                         <a href="#contact" onClick={(e) => { e.preventDefault(); scrollToSection('contact'); }}>Contact</a>
-                        
+
                         {/* Download CV in Nav */}
                         {cvUrl && (
                             <button className="nav-cv-btn" onClick={handleDownloadCV}>
@@ -45,7 +47,7 @@ const MehedyDark = ({ portfolio, content, images, specialty_info, onToggleTheme,
                                 <span>CV</span>
                             </button>
                         )}
-                        
+
                         <button className="theme-toggle" onClick={onToggleTheme} aria-label="Toggle theme">
                             {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
                         </button>
@@ -77,7 +79,7 @@ const MehedyDark = ({ portfolio, content, images, specialty_info, onToggleTheme,
                             <div className="hero-greeting">Hello, I'm</div>
                             <h1 className="hero-name">{userProfile.full_name || 'Portfolio Owner'}</h1>
                             <div className="hero-profession">{profession}</div>
-                            
+
                             <p className="hero-bio">
                                 {content?.about || 'Welcome to my portfolio. I am passionate about creating amazing experiences.'}
                             </p>
@@ -87,7 +89,7 @@ const MehedyDark = ({ portfolio, content, images, specialty_info, onToggleTheme,
                                     <Mail size={18} />
                                     Get in Touch
                                 </a>
-                                
+
                                 {cvUrl && (
                                     <button className="btn-secondary" onClick={handleDownloadCV}>
                                         <Download size={18} />
@@ -133,7 +135,7 @@ const MehedyDark = ({ portfolio, content, images, specialty_info, onToggleTheme,
                         <Code className="section-icon" />
                         <h2>Skills & Expertise</h2>
                     </div>
-                    
+
                     <div className="skills-grid">
                         {content?.skills && content.skills.length > 0 ? (
                             content.skills.map((skill, index) => (
@@ -142,8 +144,8 @@ const MehedyDark = ({ portfolio, content, images, specialty_info, onToggleTheme,
                                     {skill.level && (
                                         <div className="skill-level">
                                             <div className="skill-bar">
-                                                <div 
-                                                    className="skill-progress" 
+                                                <div
+                                                    className="skill-progress"
                                                     style={{ width: `${skill.level}%` }}
                                                 ></div>
                                             </div>
@@ -279,7 +281,7 @@ const MehedyDark = ({ portfolio, content, images, specialty_info, onToggleTheme,
 
             {/* Footer */}
             <footer className="portfolio-footer">
-                <p>© {new Date().getFullYear()} {userProfile.full_name}. All rights reserved.</p>
+                <p>© {new Date().getFullYear()} {userProfile.full_name}. Crafted with passion.</p>
             </footer>
         </div>
     );

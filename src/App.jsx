@@ -14,10 +14,12 @@ import PortfolioBuilder from './components/builder/PortfolioBuilder';
 import PublicPortfolio from './components/portfolio/PublicPortfolio';
 import BuyCredits from './components/credits/BuyCredits';
 import AdminPanel from './components/admin/AdminPanel';
+import CursorTrail from './components/effects/CursorTrail';
 
 function App() {
     return (
         <AuthProvider>
+            <CursorTrail />
             <Router>
                 <Routes>
                     {/* Public Routes */}
