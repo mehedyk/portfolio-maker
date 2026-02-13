@@ -1,9 +1,11 @@
 /* ============================================================================
    MEHEDY DARK - FIXED VERSION
    NO YELLOW COLORS - Proper contrast - Readable text everywhere
+   CSS ISOLATION: All styles scoped to .mehedy-dark-portfolio to prevent conflicts
    ============================================================================ */
 
-:root {
+.mehedy-dark-portfolio {
+    /* Scoped CSS variables to prevent conflicts with main app */
     --primary: #3b82f6;
     --primary-dark: #2563eb;
     --primary-light: #60a5fa;
@@ -19,20 +21,25 @@
     --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.4);
     --radius: 12px;
     --transition: all 0.3s ease;
-}
 
-* {
+    /* Reset and base styles */
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+    color: var(--text) !important;
+    background: var(--bg) !important;
+    line-height: 1.6;
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+
+    /* Override any global styles */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
 }
 
-.mehedy-dark-portfolio {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    color: var(--text);
-    background: var(--bg);
-    line-height: 1.6;
-}
+
 
 /* ============================================================================
    NAVIGATION - FIXED: Proper contrast, visible text
