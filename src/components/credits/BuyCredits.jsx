@@ -50,11 +50,6 @@ const BuyCredits = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!proofImage) {
-            alert('Please upload payment proof screenshot');
-            return;
-        }
-
         setLoading(true);
         try {
             const { error } = await supabase.from('payment_requests').insert([

@@ -12,11 +12,12 @@ const AdminPanel = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [customCredits, setCustomCredits] = useState({}); // Track custom credit amounts per request
 
     useEffect(() => {
         console.log('Admin Panel - Current user:', user);
         console.log('Admin Panel - Current profile:', profile);
-    
+
         if (activeTab === 'payments') {
             fetchPaymentRequests();
         } else {
@@ -27,32 +28,32 @@ const AdminPanel = () => {
     const fetchPaymentRequests = async () => {
         setLoading(true);
         setError(null);
-        
+
         try {
             console.log('Fetching payment requests...');
-            
+
             // First, verify we're admin
             const { data: profileData, error: profileError } = await supabase
                 .from('user_profiles')
                 .select('role')
                 .eq('id', user.id)
                 .single();
-            
+
             console.log('Profile check:', profileData);
-            
+
             if (profileError) {
                 console.error('Profile error:', profileError);
                 setError('Error checking admin status: ' + profileError.message);
                 setLoading(false);
                 return;
             }
-            
+
             if (profileData.role !== 'admin') {
                 setError('You are not an admin. Current role: ' + profileData.role);
                 setLoading(false);
                 return;
             }
-            
+
             // FIXED: Specify which foreign key relationship to use: user_id (not processed_by)
             // The "!" syntax tells Supabase exactly which relationship to follow
             const { data, error } = await supabase
@@ -92,7 +93,7 @@ const AdminPanel = () => {
     const fetchUsers = async () => {
         setLoading(true);
         setError(null);
-        
+
         try {
             const { data, error } = await supabase
                 .from('user_profiles')
@@ -113,18 +114,55 @@ const AdminPanel = () => {
         }
     };
 
-    const handleApprovePayment = async (requestId, userId, credits) => {
-        if (!window.confirm('Approve this payment request?')) return;
+    const handleApprovePayment = async (requestId, userId, requestedCredits) => {
+        // Get custom credit amount or use requested amount
+        const creditsToGrant = customCredits[requestId] || requestedCredits;
+
+        if (!window.confirm(`Approve this payment request and grant ${creditsToGrant} credits?`)) return;
 
         try {
-            const { error } = await supabase.rpc('approve_payment', {
-                request_id: requestId,
-                admin_id: user.id,
+            // First, update the user's credits
+            const { data: userData, error: userError } = await supabase
+                .from('user_profiles')
+                .select('credits')
+                .eq('id', userId)
+                .single();
+
+            if (userError) throw userError;
+
+            const newCredits = (userData.credits || 0) + parseInt(creditsToGrant);
+
+            const { error: updateError } = await supabase
+                .from('user_profiles')
+                .update({ credits: newCredits })
+                .eq('id', userId);
+
+            if (updateError) throw updateError;
+
+            // Then update the payment request status
+            const { error: requestError } = await supabase
+                .from('payment_requests')
+                .update({
+                    status: 'approved',
+                    processed_at: new Date(),
+                    processed_by: user.id,
+                    admin_notes: creditsToGrant !== requestedCredits
+                        ? `Granted ${creditsToGrant} credits (requested ${requestedCredits})`
+                        : null
+                })
+                .eq('id', requestId);
+
+            if (requestError) throw requestError;
+
+            alert(`Payment approved! ${creditsToGrant} credits added to user account.`);
+
+            // Clear custom credit input for this request
+            setCustomCredits(prev => {
+                const updated = { ...prev };
+                delete updated[requestId];
+                return updated;
             });
 
-            if (error) throw error;
-
-            alert('Payment approved! Credits added to user account.');
             fetchPaymentRequests();
         } catch (error) {
             console.error('Error approving payment:', error);
@@ -139,11 +177,11 @@ const AdminPanel = () => {
         try {
             const { error } = await supabase
                 .from('payment_requests')
-                .update({ 
-                    status: 'rejected', 
-                    admin_notes: notes, 
+                .update({
+                    status: 'rejected',
+                    admin_notes: notes,
                     processed_at: new Date(),
-                    processed_by: user.id 
+                    processed_by: user.id
                 })
                 .eq('id', requestId);
 
@@ -195,10 +233,10 @@ const AdminPanel = () => {
                 </div>
 
                 {/* Debug Info */}
-                <div className="debug-info" style={{ 
-                    background: 'var(--gray-100)', 
-                    padding: '16px', 
-                    borderRadius: '8px', 
+                <div className="debug-info" style={{
+                    background: 'var(--gray-100)',
+                    padding: '16px',
+                    borderRadius: '8px',
                     marginBottom: '24px',
                     fontSize: '14px'
                 }}>
@@ -224,7 +262,7 @@ const AdminPanel = () => {
                         {activeTab === 'payments' && (
                             <div className="payments-section">
                                 <h2>Payment Requests</h2>
-                                
+
                                 {paymentRequests.length === 0 ? (
                                     <div className="empty-state">
                                         <div className="empty-icon">📭</div>
@@ -250,7 +288,7 @@ const AdminPanel = () => {
                                                         <strong>Amount:</strong> ৳{request.amount}
                                                     </div>
                                                     <div className="detail-item">
-                                                        <strong>Credits:</strong> {request.credits_requested}
+                                                        <strong>Credits Requested:</strong> {request.credits_requested}
                                                     </div>
                                                     <div className="detail-item">
                                                         <strong>Method:</strong> {request.payment_method}
@@ -270,26 +308,60 @@ const AdminPanel = () => {
                                                 )}
 
                                                 {request.status === 'pending' && (
-                                                    <div className="request-actions">
-                                                        <button
-                                                            onClick={() =>
-                                                                handleApprovePayment(
-                                                                    request.id, 
-                                                                    request.user_id, 
-                                                                    request.credits_requested
-                                                                )
-                                                            }
-                                                            className="btn btn-success"
-                                                        >
-                                                            ✓ Approve
-                                                        </button>
-                                                        <button 
-                                                            onClick={() => handleRejectPayment(request.id)} 
-                                                            className="btn btn-danger"
-                                                        >
-                                                            ✗ Reject
-                                                        </button>
-                                                    </div>
+                                                    <>
+                                                        <div className="custom-credits-input" style={{
+                                                            marginTop: '16px',
+                                                            padding: '16px',
+                                                            background: 'var(--gray-50)',
+                                                            borderRadius: '8px',
+                                                            border: '1px solid var(--gray-200)'
+                                                        }}>
+                                                            <label className="label" style={{ marginBottom: '8px' }}>
+                                                                Credits to Grant (Optional - defaults to {request.credits_requested})
+                                                            </label>
+                                                            <input
+                                                                type="number"
+                                                                min="1"
+                                                                max="100"
+                                                                className="input"
+                                                                placeholder={`Default: ${request.credits_requested}`}
+                                                                value={customCredits[request.id] || ''}
+                                                                onChange={(e) => setCustomCredits({
+                                                                    ...customCredits,
+                                                                    [request.id]: parseInt(e.target.value) || ''
+                                                                })}
+                                                                style={{ maxWidth: '200px' }}
+                                                            />
+                                                            <p style={{
+                                                                fontSize: '13px',
+                                                                color: 'var(--gray-600)',
+                                                                marginTop: '8px',
+                                                                marginBottom: '0'
+                                                            }}>
+                                                                💡 Leave empty to grant the requested amount
+                                                            </p>
+                                                        </div>
+                                                        <div className="request-actions" style={{ marginTop: '16px' }}>
+                                                            <button
+                                                                onClick={() =>
+                                                                    handleApprovePayment(
+                                                                        request.id,
+                                                                        request.user_id,
+                                                                        request.credits_requested
+                                                                    )
+                                                                }
+                                                                className="btn btn-success"
+                                                            >
+                                                                ✓ Approve {customCredits[request.id] ? `(${customCredits[request.id]} credits)` : ''}
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleRejectPayment(request.id)}
+                                                                className="btn btn-danger"
+                                                            >
+                                                                ✗ Reject
+                                                            </button>
+                                                        </div>
+                                                    </>
                                                 )}
 
                                                 {request.admin_notes && (
