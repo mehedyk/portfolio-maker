@@ -278,12 +278,10 @@ const PortfolioBuilder = () => {
         if (selectedProfession?.slug === 'doctor') {
             if (!formData.specialty_info.doctor_type || !formData.specialty_info.booking_email) {
                 setBuilderToast({ msg: 'Please enter your specialty type and booking email.', isError: true }); setTimeout(() => setBuilderToast(null), 3500); return;
-                return;
             }
         } else if (selectedProfession?.slug === 'teacher') {
             if (!formData.specialty_info.teacher_level) {
                 setBuilderToast({ msg: 'Please select your teaching level.', isError: true }); setTimeout(() => setBuilderToast(null), 3500); return;
-                return;
             }
         }
 
