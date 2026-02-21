@@ -20,52 +20,18 @@ const PublicPortfolio = () => {
         setError(null);
 
         try {
-            // Step 1: resolve username → user_id from user_profiles
-            const { data: profileData, error: profileError } = await supabase
-                .from('user_profiles')
-                .select('id')
-                .eq('username', username)
-                .single();
-
-            if (profileError || !profileData) {
-                setError('No user found with this username.');
-                setLoading(false);
-                return;
-            }
-
-            // Step 2: fetch the published portfolio for that user
-            // Try `status = 'published'` first; fall back to `is_published = true`
-            // in case the DB uses a boolean column instead.
-            let { data: portData, error: portError } = await supabase
+            // Step 1: Find portfolio directly by username (stored on the portfolio itself)
+            // This avoids the need to join through user_profiles first
+            const { data: portData, error: portError } = await supabase
                 .from('portfolios')
                 .select(`
                     *,
-                    user_profiles(id, full_name, username, avatar_url),
+                    user_profiles!user_id (id, full_name, username, avatar_url),
                     professions(name, icon)
                 `)
-                .eq('user_id', profileData.id)
-                .eq('status', 'published')
+                .eq('username', username)
+                .eq('is_published', true)
                 .maybeSingle();
-
-            // Fallback: if nothing returned but no DB error, try boolean flag
-            if (!portData && !portError) {
-                const { data: fallback, error: fallbackError } = await supabase
-                    .from('portfolios')
-                    .select(`
-                        *,
-                        user_profiles(id, full_name, username, avatar_url),
-                        professions(name, icon)
-                    `)
-                    .eq('user_id', profileData.id)
-                    .eq('is_published', true)
-                    .maybeSingle();
-
-                if (fallbackError) {
-                    console.error('Fallback query error:', fallbackError);
-                } else {
-                    portData = fallback;
-                }
-            }
 
             if (portError) {
                 console.error('Portfolio fetch error:', portError);
@@ -75,7 +41,47 @@ const PublicPortfolio = () => {
             }
 
             if (!portData) {
-                setError('Portfolio not found or not yet published.');
+                // Fallback: resolve username via user_profiles then find portfolio
+                const { data: profileData, error: profileError } = await supabase
+                    .from('user_profiles')
+                    .select('id')
+                    .eq('username', username)
+                    .maybeSingle();
+
+                if (profileError || !profileData) {
+                    setError('No portfolio found for this username.');
+                    setLoading(false);
+                    return;
+                }
+
+                const { data: fallbackPort, error: fallbackError } = await supabase
+                    .from('portfolios')
+                    .select(`
+                        *,
+                        user_profiles!user_id (id, full_name, username, avatar_url),
+                        professions(name, icon)
+                    `)
+                    .eq('user_id', profileData.id)
+                    .eq('is_published', true)
+                    .maybeSingle();
+
+                if (fallbackError || !fallbackPort) {
+                    setError('Portfolio not found or not yet published.');
+                    setLoading(false);
+                    return;
+                }
+
+                setPortfolio(fallbackPort);
+                setIsDarkMode(DARK_THEME_IDS.includes(fallbackPort.theme_id));
+
+                // Track view — fire-and-forget
+                supabase
+                    .from('portfolios')
+                    .update({ view_count: (fallbackPort.view_count || 0) + 1 })
+                    .eq('id', fallbackPort.id)
+                    .then(() => {})
+                    .catch(() => {});
+
                 setLoading(false);
                 return;
             }
@@ -83,8 +89,22 @@ const PublicPortfolio = () => {
             setPortfolio(portData);
             setIsDarkMode(DARK_THEME_IDS.includes(portData.theme_id));
 
-            // Track view — fire-and-forget
-            supabase.rpc('increment_portfolio_views', { portfolio_id: portData.id }).catch(() => { });
+            // Track view — try RPC first, fall back to direct update
+            supabase
+                .rpc('increment_portfolio_views', { portfolio_id: portData.id })
+                .then(({ error: rpcErr }) => {
+                    if (rpcErr) {
+                        // RPC not available, use direct update
+                        supabase
+                            .from('portfolios')
+                            .update({ view_count: (portData.view_count || 0) + 1 })
+                            .eq('id', portData.id)
+                            .then(() => {})
+                            .catch(() => {});
+                    }
+                })
+                .catch(() => {});
+
         } catch (err) {
             console.error('Unexpected error:', err);
             setError('An unexpected error occurred. Please try again.');

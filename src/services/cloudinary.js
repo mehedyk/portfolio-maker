@@ -1,20 +1,17 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// cloudinary.js  (was cloudinary.js — updated in-place so existing imports work)
+// cloudinary.js
 //
 // Two separate upload helpers:
 //   uploadToCloudinary     → IMAGES  (uses /image/upload endpoint)
 //   uploadRawToCloudinary  → PDFs / DOCX  (uses /auto/upload endpoint)
 //
-// Previously both used /image/upload which silently corrupted or rejected PDFs
-// depending on the Cloudinary upload-preset configuration.
-//
-// NOTE: env vars use VITE_ prefix (this is a Vite project, not CRA).
+// FIX: Changed from import.meta.env (Vite) to process.env (Create React App)
 // ─────────────────────────────────────────────────────────────────────────────
 
-const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+const CLOUD_NAME = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
+const UPLOAD_PRESET = process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET;
 // Use a separate raw preset if provided; fall back to the image preset.
-const RAW_PRESET = import.meta.env.VITE_CLOUDINARY_RAW_PRESET || UPLOAD_PRESET;
+const RAW_PRESET = process.env.REACT_APP_CLOUDINARY_RAW_PRESET || UPLOAD_PRESET;
 
 /**
  * Upload an IMAGE file (JPEG, PNG, WebP, GIF…) to Cloudinary.
@@ -46,7 +43,6 @@ export const uploadToCloudinary = async (file) => {
 /**
  * Upload a raw document (PDF, DOCX, etc.) to Cloudinary.
  * Uses the /auto/upload endpoint which handles all file types correctly.
- * The Cloudinary upload preset (RAW_PRESET) must allow raw/auto resource types.
  *
  * @param {File} file
  * @returns {Promise<string>} secure_url
