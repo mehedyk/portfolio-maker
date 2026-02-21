@@ -5,7 +5,6 @@ import MehedyLight from '../templates/MehedyLight';
 import MehedyDark from '../templates/MehedyDark';
 import './PublicPortfolio.css';
 
-// Theme IDs that render MehedyDark — all others render MehedyLight.
 const DARK_THEME_IDS = [2, 6, 7, 8, 11, 13];
 
 const PublicPortfolio = () => {
@@ -20,10 +19,10 @@ const PublicPortfolio = () => {
         setError(null);
 
         try {
-            // Step 1: Find the user by username in user_profiles
+            // Step 1: Find user by username — only select columns that exist
             const { data: profileData, error: profileError } = await supabase
                 .from('user_profiles')
-                .select('id, full_name, username, avatar_url')
+                .select('id, full_name, username')
                 .eq('username', username)
                 .maybeSingle();
 
@@ -39,8 +38,7 @@ const PublicPortfolio = () => {
                 return;
             }
 
-            // Step 2: Find the published portfolio for this user
-            // NO join — fetch portfolios standalone to avoid PGRST200 schema cache errors
+            // Step 2: Find published portfolio — no joins, plain select
             const { data: portData, error: portError } = await supabase
                 .from('portfolios')
                 .select('*')
@@ -55,23 +53,20 @@ const PublicPortfolio = () => {
             }
 
             if (!portData) {
-                // Check if unpublished portfolio exists
                 const { data: anyPort } = await supabase
                     .from('portfolios')
                     .select('id, is_published')
                     .eq('user_id', profileData.id)
                     .maybeSingle();
 
-                if (anyPort) {
-                    setError('This portfolio has not been published yet.');
-                } else {
-                    setError('No portfolio found for this user.');
-                }
+                setError(anyPort
+                    ? 'This portfolio has not been published yet.'
+                    : 'No portfolio found for this user.');
                 setLoading(false);
                 return;
             }
 
-            // Step 3: Fetch profession name separately if needed
+            // Step 3: Fetch profession separately
             let professionData = null;
             if (portData.profession_id) {
                 const { data: prof } = await supabase
@@ -82,29 +77,18 @@ const PublicPortfolio = () => {
                 professionData = prof;
             }
 
-            // Step 4: Assemble the portfolio object the templates expect
-            const assembledPortfolio = {
+            // Assemble object matching what templates expect
+            setPortfolio({
                 ...portData,
                 user_profiles: profileData,
                 professions: professionData,
-            };
-
-            setPortfolio(assembledPortfolio);
+            });
             setIsDarkMode(DARK_THEME_IDS.includes(portData.theme_id));
 
             // Track view — fire and forget
-            supabase
-                .rpc('increment_portfolio_views', { portfolio_id: portData.id })
-                .catch(() => {
-                    supabase
-                        .from('portfolios')
-                        .update({ view_count: (portData.view_count || 0) + 1 })
-                        .eq('id', portData.id)
-                        .then(() => {}).catch(() => {});
-                });
+            supabase.rpc('increment_portfolio_views', { portfolio_id: portData.id }).catch(() => {});
 
         } catch (err) {
-            console.error('Unexpected error:', err);
             setError('Unexpected error: ' + err.message);
         } finally {
             setLoading(false);
@@ -114,8 +98,6 @@ const PublicPortfolio = () => {
     useEffect(() => {
         fetchPortfolio();
     }, [fetchPortfolio]);
-
-    const handleToggleTheme = () => setIsDarkMode(prev => !prev);
 
     if (loading) {
         return (
@@ -128,20 +110,54 @@ const PublicPortfolio = () => {
 
     if (error || !portfolio) {
         return (
-            <div className="not-found">
-                <h1>404</h1>
-                <p>{error || 'Portfolio not found'}</p>
-                <div style={{ marginTop: '20px', fontSize: '16px' }}>
-                    <p style={{ marginBottom: '12px' }}>Possible reasons:</p>
-                    <ul>
-                        <li>This portfolio has not been published yet</li>
-                        <li>The username is incorrect</li>
-                        <li>The portfolio was unpublished by the owner</li>
-                    </ul>
+            <div style={{
+                minHeight: '100vh',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%)',
+                padding: '40px 20px',
+                textAlign: 'center',
+                fontFamily: "'Outfit', sans-serif"
+            }}>
+                <div style={{
+                    background: 'white',
+                    borderRadius: '24px',
+                    padding: '60px 48px',
+                    maxWidth: '480px',
+                    width: '100%',
+                    boxShadow: '0 25px 50px rgba(0,0,0,0.1)',
+                }}>
+                    <div style={{ fontSize: '72px', marginBottom: '16px' }}>🔍</div>
+                    <h1 style={{
+                        fontSize: '28px',
+                        fontWeight: '800',
+                        color: '#0f172a',
+                        marginBottom: '12px',
+                        fontFamily: "'Space Grotesk', sans-serif"
+                    }}>
+                        Portfolio Not Found
+                    </h1>
+                    <p style={{ color: '#64748b', marginBottom: '32px', lineHeight: '1.6' }}>
+                        {error || 'This portfolio does not exist or has not been published yet.'}
+                    </p>
+                    <a href="/" style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '14px 28px',
+                        background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+                        color: 'white',
+                        borderRadius: '12px',
+                        textDecoration: 'none',
+                        fontWeight: '700',
+                        fontSize: '15px',
+                        transition: 'all 0.2s'
+                    }}>
+                        ← Go to Home
+                    </a>
                 </div>
-                <a href="/" className="btn btn-primary" style={{ marginTop: '32px' }}>
-                    Go to Home
-                </a>
             </div>
         );
     }
@@ -157,7 +173,7 @@ const PublicPortfolio = () => {
             content={content}
             images={images}
             specialty_info={specialty_info}
-            onToggleTheme={handleToggleTheme}
+            onToggleTheme={() => setIsDarkMode(prev => !prev)}
             isDarkMode={isDarkMode}
         />
     );
