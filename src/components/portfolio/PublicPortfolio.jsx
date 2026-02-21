@@ -7,19 +7,28 @@ import './PublicPortfolio.css';
 
 const DARK_THEME_IDS = [2, 6, 7, 8, 11, 13];
 
+// User-friendly error messages — never expose raw DB errors
+const friendlyError = (code) => {
+    switch (code) {
+        case 'NOT_FOUND_USER': return 'No portfolio found at this address.';
+        case 'NOT_PUBLISHED': return 'This portfolio has not been published yet.';
+        case 'NO_PORTFOLIO': return 'No portfolio found for this user.';
+        default: return 'Something went wrong loading this portfolio. Please try again.';
+    }
+};
+
 const PublicPortfolio = () => {
     const { username } = useParams();
     const [portfolio, setPortfolio] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [errorCode, setErrorCode] = useState(null);
     const [isDarkMode, setIsDarkMode] = useState(false);
 
     const fetchPortfolio = useCallback(async () => {
         setLoading(true);
-        setError(null);
+        setErrorCode(null);
 
         try {
-            // Step 1: Find user by username — only select columns that exist
             const { data: profileData, error: profileError } = await supabase
                 .from('user_profiles')
                 .select('id, full_name, username')
@@ -27,18 +36,18 @@ const PublicPortfolio = () => {
                 .maybeSingle();
 
             if (profileError) {
-                setError('Failed to load profile: ' + profileError.message);
+                if (process.env.NODE_ENV === 'development') console.error('Profile error:', profileError);
+                setErrorCode('GENERIC');
                 setLoading(false);
                 return;
             }
 
             if (!profileData) {
-                setError('No user found with username: ' + username);
+                setErrorCode('NOT_FOUND_USER');
                 setLoading(false);
                 return;
             }
 
-            // Step 2: Find published portfolio — no joins, plain select
             const { data: portData, error: portError } = await supabase
                 .from('portfolios')
                 .select('*')
@@ -47,7 +56,8 @@ const PublicPortfolio = () => {
                 .maybeSingle();
 
             if (portError) {
-                setError('Failed to load portfolio: ' + portError.message);
+                if (process.env.NODE_ENV === 'development') console.error('Portfolio error:', portError);
+                setErrorCode('GENERIC');
                 setLoading(false);
                 return;
             }
@@ -59,14 +69,11 @@ const PublicPortfolio = () => {
                     .eq('user_id', profileData.id)
                     .maybeSingle();
 
-                setError(anyPort
-                    ? 'This portfolio has not been published yet.'
-                    : 'No portfolio found for this user.');
+                setErrorCode(anyPort ? 'NOT_PUBLISHED' : 'NO_PORTFOLIO');
                 setLoading(false);
                 return;
             }
 
-            // Step 3: Fetch profession separately
             let professionData = null;
             if (portData.profession_id) {
                 const { data: prof } = await supabase
@@ -77,7 +84,6 @@ const PublicPortfolio = () => {
                 professionData = prof;
             }
 
-            // Assemble object matching what templates expect
             setPortfolio({
                 ...portData,
                 user_profiles: profileData,
@@ -85,11 +91,12 @@ const PublicPortfolio = () => {
             });
             setIsDarkMode(DARK_THEME_IDS.includes(portData.theme_id));
 
-            // Track view — fire and forget
+            // Track view — fire and forget, never expose errors
             try { await supabase.rpc('increment_portfolio_views', { portfolio_id: portData.id }); } catch (_) {}
 
         } catch (err) {
-            setError('Unexpected error: ' + err.message);
+            if (process.env.NODE_ENV === 'development') console.error('Unexpected error:', err);
+            setErrorCode('GENERIC');
         } finally {
             setLoading(false);
         }
@@ -101,14 +108,14 @@ const PublicPortfolio = () => {
 
     if (loading) {
         return (
-            <div className="loading-container">
+            <div className="loading-container" role="status" aria-label="Loading portfolio">
                 <div className="spinner" />
                 <p style={{ marginTop: '20px', color: 'var(--gray-600)' }}>Loading portfolio...</p>
             </div>
         );
     }
 
-    if (error || !portfolio) {
+    if (errorCode || !portfolio) {
         return (
             <div style={{
                 minHeight: '100vh',
@@ -140,7 +147,7 @@ const PublicPortfolio = () => {
                         Portfolio Not Found
                     </h1>
                     <p style={{ color: '#64748b', marginBottom: '32px', lineHeight: '1.6' }}>
-                        {error || 'This portfolio does not exist or has not been published yet.'}
+                        {friendlyError(errorCode)}
                     </p>
                     <a href="/" style={{
                         display: 'inline-flex',
@@ -153,7 +160,6 @@ const PublicPortfolio = () => {
                         textDecoration: 'none',
                         fontWeight: '700',
                         fontSize: '15px',
-                        transition: 'all 0.2s'
                     }}>
                         ← Go to Home
                     </a>

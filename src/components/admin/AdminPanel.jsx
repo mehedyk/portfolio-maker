@@ -12,12 +12,19 @@ const AdminPanel = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [customCredits, setCustomCredits] = useState({}); // Track custom credit amounts per request
+    const [customCredits, setCustomCredits] = useState({});
+
+    // Modal state replacing alert/confirm/prompt
+    const [modal, setModal] = useState({ open: false, type: '', data: null });
+    const [rejectNotes, setRejectNotes] = useState('');
+    const [toastMsg, setToastMsg] = useState(null);
+
+    const showToast = (msg, isError = false) => {
+        setToastMsg({ msg, isError });
+        setTimeout(() => setToastMsg(null), 3500);
+    };
 
     useEffect(() => {
-        console.log('Admin Panel - Current user:', user);
-        console.log('Admin Panel - Current profile:', profile);
-
         if (activeTab === 'payments') {
             fetchPaymentRequests();
         } else {
@@ -30,32 +37,24 @@ const AdminPanel = () => {
         setError(null);
 
         try {
-            console.log('Fetching payment requests...');
-
-            // First, verify we're admin
             const { data: profileData, error: profileError } = await supabase
                 .from('user_profiles')
                 .select('role')
                 .eq('id', user.id)
                 .single();
 
-            console.log('Profile check:', profileData);
-
             if (profileError) {
-                console.error('Profile error:', profileError);
-                setError('Error checking admin status: ' + profileError.message);
+                setError('Error checking admin status. Please try again.');
                 setLoading(false);
                 return;
             }
 
             if (profileData.role !== 'admin') {
-                setError('You are not an admin. Current role: ' + profileData.role);
+                setError('Access denied. Admin privileges required.');
                 setLoading(false);
                 return;
             }
 
-            // FIXED: Specify which foreign key relationship to use: user_id (not processed_by)
-            // The "!" syntax tells Supabase exactly which relationship to follow
             const { data, error } = await supabase
                 .from('payment_requests')
                 .select(`
@@ -69,22 +68,14 @@ const AdminPanel = () => {
                 `)
                 .order('created_at', { ascending: false });
 
-            console.log('Payment requests data:', data);
-            console.log('Payment requests error:', error);
-
             if (error) {
-                console.error('Error fetching payment requests:', error);
-                setError('Error loading payment requests: ' + error.message);
+                setError('Error loading payment requests. Please try again.');
                 setPaymentRequests([]);
             } else {
                 setPaymentRequests(data || []);
-                if (!data || data.length === 0) {
-                    console.log('No payment requests found');
-                }
             }
-        } catch (error) {
-            console.error('Unexpected error:', error);
-            setError('Unexpected error: ' + error.message);
+        } catch (err) {
+            setError('An unexpected error occurred. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -101,27 +92,28 @@ const AdminPanel = () => {
                 .order('created_at', { ascending: false });
 
             if (error) {
-                console.error('Error fetching users:', error);
-                setError('Error loading users: ' + error.message);
+                setError('Error loading users. Please try again.');
             } else {
                 setUsers(data || []);
             }
-        } catch (error) {
-            console.error('Unexpected error:', error);
-            setError('Unexpected error: ' + error.message);
+        } catch (err) {
+            setError('An unexpected error occurred.');
         } finally {
             setLoading(false);
         }
     };
 
     const handleApprovePayment = async (requestId, userId, requestedCredits) => {
-        // Get custom credit amount or use requested amount
         const creditsToGrant = customCredits[requestId] || requestedCredits;
+        // Open confirmation modal instead of window.confirm
+        setModal({ open: true, type: 'approve', data: { requestId, userId, requestedCredits, creditsToGrant } });
+    };
 
-        if (!window.confirm(`Approve this payment request and grant ${creditsToGrant} credits?`)) return;
+    const confirmApprove = async () => {
+        const { requestId, userId, creditsToGrant } = modal.data;
+        setModal({ open: false, type: '', data: null });
 
         try {
-            // First, update the user's credits
             const { data: userData, error: userError } = await supabase
                 .from('user_profiles')
                 .select('credits')
@@ -139,24 +131,22 @@ const AdminPanel = () => {
 
             if (updateError) throw updateError;
 
-            // Then update the payment request status
             const { error: requestError } = await supabase
                 .from('payment_requests')
                 .update({
                     status: 'approved',
                     processed_at: new Date(),
                     processed_by: user.id,
-                    admin_notes: creditsToGrant !== requestedCredits
-                        ? `Granted ${creditsToGrant} credits (requested ${requestedCredits})`
+                    admin_notes: creditsToGrant !== modal.data?.requestedCredits
+                        ? `Granted ${creditsToGrant} credits (requested ${modal.data?.requestedCredits})`
                         : null
                 })
                 .eq('id', requestId);
 
             if (requestError) throw requestError;
 
-            alert(`Payment approved! ${creditsToGrant} credits added to user account.`);
+            showToast(`Payment approved! ${creditsToGrant} credits added.`);
 
-            // Clear custom credit input for this request
             setCustomCredits(prev => {
                 const updated = { ...prev };
                 delete updated[requestId];
@@ -164,39 +154,93 @@ const AdminPanel = () => {
             });
 
             fetchPaymentRequests();
-        } catch (error) {
-            console.error('Error approving payment:', error);
-            alert('Failed to approve payment: ' + error.message);
+        } catch (err) {
+            showToast('Failed to approve payment. Please try again.', true);
         }
     };
 
-    const handleRejectPayment = async (requestId) => {
-        const notes = prompt('Rejection reason:');
-        if (!notes) return;
+    const handleRejectPayment = (requestId) => {
+        setRejectNotes('');
+        setModal({ open: true, type: 'reject', data: { requestId } });
+    };
+
+    const confirmReject = async () => {
+        if (!rejectNotes.trim()) return;
+        const { requestId } = modal.data;
+        setModal({ open: false, type: '', data: null });
 
         try {
             const { error } = await supabase
                 .from('payment_requests')
                 .update({
                     status: 'rejected',
-                    admin_notes: notes,
+                    admin_notes: rejectNotes,
                     processed_at: new Date(),
                     processed_by: user.id
                 })
                 .eq('id', requestId);
 
             if (error) throw error;
-
-            alert('Payment request rejected');
+            showToast('Payment request rejected.');
             fetchPaymentRequests();
-        } catch (error) {
-            console.error('Error rejecting payment:', error);
-            alert('Failed to reject payment: ' + error.message);
+        } catch (err) {
+            showToast('Failed to reject payment. Please try again.', true);
         }
     };
 
     return (
         <div className="admin-panel">
+            {/* Toast notification */}
+            {toastMsg && (
+                <div style={{
+                    position: 'fixed', top: '20px', right: '20px', zIndex: 9999,
+                    background: toastMsg.isError ? '#ef4444' : '#22c55e',
+                    color: 'white', padding: '14px 20px', borderRadius: '10px',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.2)', fontWeight: '600',
+                    maxWidth: '340px'
+                }}>
+                    {toastMsg.msg}
+                </div>
+            )}
+
+            {/* Approve confirmation modal */}
+            {modal.open && modal.type === 'approve' && (
+                <div className="modal-overlay" onClick={() => setModal({ open: false, type: '', data: null })}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <div className="modal-icon">✅</div>
+                        <h2>Confirm Approval</h2>
+                        <p>Grant <strong>{modal.data.creditsToGrant}</strong> credits to this user?</p>
+                        <div className="modal-actions">
+                            <button onClick={confirmApprove} className="btn btn-success">Approve</button>
+                            <button onClick={() => setModal({ open: false, type: '', data: null })} className="btn btn-secondary">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Reject modal with reason input */}
+            {modal.open && modal.type === 'reject' && (
+                <div className="modal-overlay" onClick={() => setModal({ open: false, type: '', data: null })}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <div className="modal-icon">❌</div>
+                        <h2>Reject Payment</h2>
+                        <p>Please provide a reason for rejection:</p>
+                        <textarea
+                            className="textarea"
+                            rows="3"
+                            value={rejectNotes}
+                            onChange={e => setRejectNotes(e.target.value)}
+                            placeholder="e.g. Transaction ID not found, screenshot unclear..."
+                            style={{ width: '100%', marginBottom: '16px' }}
+                        />
+                        <div className="modal-actions">
+                            <button onClick={confirmReject} disabled={!rejectNotes.trim()} className="btn btn-danger">Reject</button>
+                            <button onClick={() => setModal({ open: false, type: '', data: null })} className="btn btn-secondary">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <nav className="admin-nav">
                 <div className="container">
                     <div className="nav-content">
@@ -205,6 +249,9 @@ const AdminPanel = () => {
                             <h2>Admin Panel</h2>
                         </div>
                         <div className="nav-actions">
+                            <span style={{ fontSize: '14px', color: 'var(--gray-600)' }}>
+                                {profile?.email} · <strong>{profile?.role}</strong>
+                            </span>
                             <button onClick={() => navigate('/dashboard')} className="btn btn-secondary">
                                 Dashboard
                             </button>
@@ -230,20 +277,6 @@ const AdminPanel = () => {
                     >
                         👥 Users
                     </button>
-                </div>
-
-                {/* Debug Info */}
-                <div className="debug-info" style={{
-                    background: 'var(--gray-100)',
-                    padding: '16px',
-                    borderRadius: '8px',
-                    marginBottom: '24px',
-                    fontSize: '14px'
-                }}>
-                    <p><strong>Debug Info:</strong></p>
-                    <p>Your Role: <strong>{profile?.role || 'Unknown'}</strong></p>
-                    <p>User ID: <code>{user?.id}</code></p>
-                    <p>Email: {profile?.email}</p>
                 </div>
 
                 {error && (
@@ -303,7 +336,9 @@ const AdminPanel = () => {
 
                                                 {request.proof_image && (
                                                     <div className="proof-image">
-                                                        <img src={request.proof_image} alt="Payment proof" />
+                                                        <a href={request.proof_image} target="_blank" rel="noopener noreferrer">
+                                                            <img src={request.proof_image} alt="Payment proof" />
+                                                        </a>
                                                     </div>
                                                 )}
 
@@ -317,7 +352,7 @@ const AdminPanel = () => {
                                                             border: '1px solid var(--gray-200)'
                                                         }}>
                                                             <label className="label" style={{ marginBottom: '8px' }}>
-                                                                Credits to Grant (Optional - defaults to {request.credits_requested})
+                                                                Credits to Grant (Optional — defaults to {request.credits_requested})
                                                             </label>
                                                             <input
                                                                 type="number"
@@ -392,18 +427,18 @@ const AdminPanel = () => {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {users.map((user) => (
-                                                <tr key={user.id}>
-                                                    <td>{user.full_name}</td>
-                                                    <td>{user.email}</td>
-                                                    <td>{user.username}</td>
-                                                    <td>{user.credits}</td>
+                                            {users.map((u) => (
+                                                <tr key={u.id}>
+                                                    <td>{u.full_name}</td>
+                                                    <td>{u.email}</td>
+                                                    <td>{u.username}</td>
+                                                    <td>{u.credits}</td>
                                                     <td>
-                                                        <span className={`role-badge ${user.role}`}>
-                                                            {user.role}
+                                                        <span className={`role-badge ${u.role}`}>
+                                                            {u.role}
                                                         </span>
                                                     </td>
-                                                    <td>{new Date(user.created_at).toLocaleDateString()}</td>
+                                                    <td>{new Date(u.created_at).toLocaleDateString()}</td>
                                                 </tr>
                                             ))}
                                         </tbody>

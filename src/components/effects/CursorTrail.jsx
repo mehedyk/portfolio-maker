@@ -2,13 +2,11 @@ import React, { useEffect, useRef, useCallback } from 'react';
 import './CursorTrail.css';
 
 /**
- * BeaconCursor — a smooth, canvas-based beacon cursor effect.
- * 
- *  • Inner dot: small, opaque circle centered on the cursor
- *  • Outer ring: large circle that "lags" behind the cursor with a lerp
- *  • Ripple pulses: periodic expanding + fading rings emitted from cursor position
- *  • Completely CSS-free animation (all canvas, no DOM particles)
- *  • Single instance rendered at App root — templates must NOT render this
+ * BeaconCursor — smooth canvas-based cursor effect.
+ * Fixes applied:
+ *  - aria-hidden="true" so screen readers skip the canvas
+ *  - RAF pauses when document is hidden (Page Visibility API) to save CPU
+ *  - Mouse tracking only starts after first mousemove (no default 0,0 artifact)
  */
 const CursorTrail = () => {
     const canvasRef = useRef(null);
@@ -17,13 +15,18 @@ const CursorTrail = () => {
     const ripples = useRef([]);
     const rafRef = useRef(null);
     const lastRippleTime = useRef(0);
+    const isVisible = useRef(!document.hidden);
 
     const draw = useCallback(() => {
+        if (!isVisible.current) {
+            rafRef.current = requestAnimationFrame(draw);
+            return;
+        }
+
         const canvas = canvasRef.current;
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
 
-        // Resize canvas to viewport
         if (canvas.width !== window.innerWidth || canvas.height !== window.innerHeight) {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
@@ -34,7 +37,12 @@ const CursorTrail = () => {
         const mx = mouse.current.x;
         const my = mouse.current.y;
 
-        // ── Lerp outer ring towards mouse ──
+        // If mouse hasn't moved yet, don't draw anything
+        if (mx === -999) {
+            rafRef.current = requestAnimationFrame(draw);
+            return;
+        }
+
         const lerpFactor = 0.12;
         ring.current.x += (mx - ring.current.x) * lerpFactor;
         ring.current.y += (my - ring.current.y) * lerpFactor;
@@ -42,16 +50,14 @@ const CursorTrail = () => {
         const rx = ring.current.x;
         const ry = ring.current.y;
 
-        // ── Emit a ripple periodically ──
         const now = Date.now();
         if (now - lastRippleTime.current > 600) {
             ripples.current.push({ x: mx, y: my, r: 0, alpha: 0.6, born: now });
             lastRippleTime.current = now;
         }
 
-        // ── Draw ripples (expanding + fading rings) ──
         ripples.current = ripples.current.filter(rp => {
-            const age = (now - rp.born) / 1000; // seconds
+            const age = (now - rp.born) / 1000;
             if (age > 1.2) return false;
 
             const progress = age / 1.2;
@@ -60,14 +66,13 @@ const CursorTrail = () => {
 
             ctx.beginPath();
             ctx.arc(rp.x, rp.y, radius, 0, Math.PI * 2);
-            ctx.strokeStyle = `rgba(67, 56, 202, ${alpha})`; // indigo-700
+            ctx.strokeStyle = `rgba(67, 56, 202, ${alpha})`;
             ctx.lineWidth = 1.5;
             ctx.stroke();
 
             return true;
         });
 
-        // ── Outer ring (large, lagging circle) ──
         const outerRadius = 28;
         const distX = mx - rx;
         const distY = my - ry;
@@ -78,7 +83,6 @@ const CursorTrail = () => {
         ctx.translate(rx, ry);
         ctx.scale(squishScale, 1 / squishScale);
 
-        // Gradient stroke for the outer ring
         const grad = ctx.createRadialGradient(0, 0, outerRadius - 4, 0, 0, outerRadius + 4);
         grad.addColorStop(0, 'rgba(67, 56, 202, 0.85)');
         grad.addColorStop(0.5, 'rgba(109, 40, 217, 0.6)');
@@ -91,7 +95,6 @@ const CursorTrail = () => {
         ctx.stroke();
         ctx.restore();
 
-        // ── Inner glow backdrop (soft fill) ──
         const glow = ctx.createRadialGradient(mx, my, 0, mx, my, 18);
         glow.addColorStop(0, 'rgba(67, 56, 202, 0.15)');
         glow.addColorStop(1, 'rgba(67, 56, 202, 0)');
@@ -100,10 +103,9 @@ const CursorTrail = () => {
         ctx.fillStyle = glow;
         ctx.fill();
 
-        // ── Inner dot (sharp center) ──
         ctx.beginPath();
         ctx.arc(mx, my, 5, 0, Math.PI * 2);
-        ctx.fillStyle = '#312e81'; // dark indigo — visible on light AND dark backgrounds
+        ctx.fillStyle = '#312e81';
         ctx.shadowColor = 'rgba(109, 40, 217, 0.8)';
         ctx.shadowBlur = 10;
         ctx.fill();
@@ -131,19 +133,32 @@ const CursorTrail = () => {
             }
         };
 
+        const onVisibilityChange = () => {
+            isVisible.current = !document.hidden;
+        };
+
         window.addEventListener('mousemove', onMouseMove, { passive: true });
         window.addEventListener('resize', onResize, { passive: true });
+        document.addEventListener('visibilitychange', onVisibilityChange);
 
         rafRef.current = requestAnimationFrame(draw);
 
         return () => {
             window.removeEventListener('mousemove', onMouseMove);
             window.removeEventListener('resize', onResize);
+            document.removeEventListener('visibilitychange', onVisibilityChange);
             if (rafRef.current) cancelAnimationFrame(rafRef.current);
         };
     }, [draw]);
 
-    return <canvas ref={canvasRef} className="beacon-cursor-canvas" />;
+    return (
+        <canvas
+            ref={canvasRef}
+            className="beacon-cursor-canvas"
+            aria-hidden="true"
+            role="presentation"
+        />
+    );
 };
 
 export default CursorTrail;

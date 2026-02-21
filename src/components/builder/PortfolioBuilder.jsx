@@ -68,6 +68,9 @@ const PortfolioBuilder = () => {
         description: ''
     });
 
+    // Builder toast notifications (replaces browser alert/confirm)
+    const [builderToast, setBuilderToast] = useState(null);
+
     // CV Upload States
     const [cvUploading, setCvUploading] = useState(false);
     const [cvUrl, setCvUrl] = useState('');
@@ -196,12 +199,12 @@ const PortfolioBuilder = () => {
         // Accept PDF and DOCX
         const allowed = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
         if (!allowed.includes(file.type)) {
-            alert('Please upload a PDF or DOCX file');
+            setBuilderToast({ msg: 'Please upload a PDF or DOCX file.', isError: true }); setTimeout(() => setBuilderToast(null), 3500);
             return;
         }
 
         if (file.size > 10 * 1024 * 1024) {
-            alert('File size must be less than 10 MB');
+            setBuilderToast({ msg: 'File size must be less than 10 MB.', isError: true }); setTimeout(() => setBuilderToast(null), 3500);
             return;
         }
 
@@ -213,7 +216,7 @@ const PortfolioBuilder = () => {
             setFormData(prev => ({ ...prev, cv_url: url }));
         } catch (error) {
             console.error('CV upload error:', error);
-            alert('Failed to upload CV: ' + error.message);
+            setBuilderToast({ msg: 'Failed to upload CV. Please try again.', isError: true }); setTimeout(() => setBuilderToast(null), 3500);
         } finally {
             setCvUploading(false);
         }
@@ -274,12 +277,12 @@ const PortfolioBuilder = () => {
 
         if (selectedProfession?.slug === 'doctor') {
             if (!formData.specialty_info.doctor_type || !formData.specialty_info.booking_email) {
-                alert('Please enter your specialty type and booking email');
+                setBuilderToast({ msg: 'Please enter your specialty type and booking email.', isError: true }); setTimeout(() => setBuilderToast(null), 3500); return;
                 return;
             }
         } else if (selectedProfession?.slug === 'teacher') {
             if (!formData.specialty_info.teacher_level) {
-                alert('Please select your teaching level');
+                setBuilderToast({ msg: 'Please select your teaching level.', isError: true }); setTimeout(() => setBuilderToast(null), 3500); return;
                 return;
             }
         }
@@ -301,7 +304,7 @@ const PortfolioBuilder = () => {
             img.onload = async () => {
                 const aspectRatio = img.width / img.height;
                 if (Math.abs(aspectRatio - 1) > 0.1) {
-                    alert('Please upload a square image (1:1 aspect ratio) for your profile picture');
+                    setBuilderToast({ msg: 'Please upload a square image (1:1 aspect ratio).', isError: true }); setTimeout(() => setBuilderToast(null), 3500);
                     return;
                 }
 
@@ -314,7 +317,7 @@ const PortfolioBuilder = () => {
                         images: { ...prev.images, [type]: url },
                     }));
                 } catch (error) {
-                    alert('Failed to upload image: ' + error.message);
+                    setBuilderToast({ msg: 'Failed to upload image. Please try again.', isError: true }); setTimeout(() => setBuilderToast(null), 3500);
                 } finally {
                     setLoading(false);
                 }
@@ -352,7 +355,7 @@ const PortfolioBuilder = () => {
 
     const handleAddProject = () => {
         if (!currentProject.title.trim()) {
-            alert('Please enter a project title');
+            setBuilderToast({ msg: 'Please enter a project title.', isError: true }); setTimeout(() => setBuilderToast(null), 3500);
             return;
         }
 
@@ -379,7 +382,7 @@ const PortfolioBuilder = () => {
 
     const handleAddExperience = () => {
         if (!currentExperience.position.trim() || !currentExperience.company.trim()) {
-            alert('Please enter position and company');
+            setBuilderToast({ msg: 'Please enter position and company.', isError: true }); setTimeout(() => setBuilderToast(null), 3500);
             return;
         }
 
@@ -406,7 +409,7 @@ const PortfolioBuilder = () => {
 
     const handleAddEducation = () => {
         if (!currentEducation.degree.trim() || !currentEducation.institution.trim()) {
-            alert('Please enter degree and institution');
+            setBuilderToast({ msg: 'Please enter degree and institution.', isError: true }); setTimeout(() => setBuilderToast(null), 3500);
             return;
         }
 
@@ -456,11 +459,11 @@ const PortfolioBuilder = () => {
                 await supabase.from('portfolios').insert([portfolioData]);
             }
 
-            alert('Portfolio saved as draft!');
+            setBuilderToast({ msg: 'Portfolio saved as draft!' }); setTimeout(() => setBuilderToast(null), 3500);
             navigate('/dashboard');
         } catch (error) {
             console.error('Error saving:', error);
-            alert('Failed to save portfolio');
+            setBuilderToast({ msg: 'Failed to save portfolio. Please try again.', isError: true }); setTimeout(() => setBuilderToast(null), 3500);
         } finally {
             setLoading(false);
         }
@@ -473,12 +476,12 @@ const PortfolioBuilder = () => {
         }
 
         if (!formData.profession_id || !formData.theme_id) {
-            alert('Please select profession and theme');
+            setBuilderToast({ msg: 'Please select a profession and theme.', isError: true }); setTimeout(() => setBuilderToast(null), 3500);
             return;
         }
 
         if (!formData.content.about || !formData.content.contact.email) {
-            alert('Please fill in at least About section and email');
+            setBuilderToast({ msg: 'Please fill in at least the About section and email.', isError: true }); setTimeout(() => setBuilderToast(null), 3500);
             return;
         }
 
@@ -532,6 +535,17 @@ const PortfolioBuilder = () => {
 
     return (
         <div className="portfolio-builder">
+            {builderToast && (
+                <div style={{
+                    position: 'fixed', top: '20px', right: '20px', zIndex: 9999,
+                    background: builderToast.isError ? '#ef4444' : '#22c55e',
+                    color: 'white', padding: '14px 20px', borderRadius: '10px',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.2)', fontWeight: '600',
+                    maxWidth: '340px'
+                }}>
+                    {builderToast.msg}
+                </div>
+            )}
             <div className="builder-header">
                 <div className="container">
                     <div className="builder-title">
@@ -721,7 +735,7 @@ const PortfolioBuilder = () => {
                                         className={getThemeClassName(theme.id, isLocked)}
                                         onClick={() => {
                                             if (isLocked) {
-                                                alert('Premium themes require credits. Please purchase credits first.');
+                                                setBuilderToast({ msg: 'Premium themes require credits. Please purchase credits first.', isError: true }); setTimeout(() => setBuilderToast(null), 3500);
                                                 return;
                                             }
                                             setFormData({ ...formData, theme_id: mapThemeIdToDatabase(theme.id) });
@@ -762,7 +776,7 @@ const PortfolioBuilder = () => {
                                 Resume / CV
                             </h3>
                             <p className="step-description" style={{ marginBottom: '1rem' }}>
-                                Upload your resume/CV (PDF only, max 5MB). This will appear as a download button in your portfolio.
+                                Upload your resume/CV (PDF or DOCX, max 10MB). This will appear as a download button in your portfolio.
                             </p>
 
                             <div className="cv-upload-container">
@@ -771,7 +785,7 @@ const PortfolioBuilder = () => {
                                         <input
                                             type="file"
                                             id="cv-upload"
-                                            accept=".pdf,application/pdf"
+                                            accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                                             onChange={handleCVUpload}
                                             disabled={cvUploading}
                                             style={{ display: 'none' }}
@@ -785,7 +799,7 @@ const PortfolioBuilder = () => {
                                             ) : (
                                                 <>
                                                     <Upload size={24} />
-                                                    <span>Click to upload CV (PDF)</span>
+                                                    <span>Click to upload CV (PDF or DOCX)</span>
                                                 </>
                                             )}
                                         </label>
@@ -1349,7 +1363,7 @@ const PortfolioBuilder = () => {
                                         navigate('/dashboard');
                                     } catch (error) {
                                         console.error('Error publishing:', error);
-                                        alert(error.message || 'Failed to publish portfolio');
+                                        setBuilderToast({ msg: error.message || 'Failed to publish portfolio.', isError: true }); setTimeout(() => setBuilderToast(null), 3500);
                                     } finally {
                                         setLoading(false);
                                     }

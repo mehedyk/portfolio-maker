@@ -17,7 +17,6 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Check active session
         supabase.auth.getSession().then(({ data: { session } }) => {
             setUser(session?.user ?? null);
             if (session?.user) {
@@ -27,7 +26,6 @@ export const AuthProvider = ({ children }) => {
             }
         });
 
-        // Listen for auth changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setUser(session?.user ?? null);
             if (session?.user) {
@@ -43,22 +41,19 @@ export const AuthProvider = ({ children }) => {
 
     const fetchProfile = async (userId) => {
         try {
-            console.log('Fetching profile for:', userId);
             const { data, error } = await supabase
                 .from('user_profiles')
                 .select('*')
                 .eq('id', userId)
                 .single();
 
-            if (error) {
-                console.error('Error fetching profile from DB:', error);
-                throw error;
-            }
-
-            console.log('Profile data received:', data);
+            if (error) throw error;
             setProfile(data);
         } catch (error) {
-            console.error('Error in fetchProfile:', error);
+            // Log without exposing PII details to console in production
+            if (process.env.NODE_ENV === 'development') {
+                console.error('Error fetching profile:', error);
+            }
         } finally {
             setLoading(false);
         }
@@ -78,8 +73,6 @@ export const AuthProvider = ({ children }) => {
             });
 
             if (error) throw error;
-
-            // Profile is now created automatically via database trigger (handle_new_user)
             return { data, error: null };
         } catch (error) {
             return { data: null, error };
@@ -119,7 +112,9 @@ export const AuthProvider = ({ children }) => {
             setUser(null);
             setProfile(null);
         } catch (error) {
-            console.error('Error signing out:', error);
+            if (process.env.NODE_ENV === 'development') {
+                console.error('Error signing out:', error);
+            }
         }
     };
 

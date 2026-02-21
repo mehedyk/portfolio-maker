@@ -8,12 +8,13 @@ const Dashboard = () => {
     const { user, profile, signOut, refreshProfile } = useAuth();
     const [portfolio, setPortfolio] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [toast, setToast] = useState(null);
+    const [unpublishModal, setUnpublishModal] = useState(false);
 
-    // Debug: Log profile to check role
-    useEffect(() => {
-        console.log('Profile data:', profile);
-        console.log('Profile role:', profile?.role);
-    }, [profile]);
+    const showToast = (msg, isError = false) => {
+        setToast({ msg, isError });
+        setTimeout(() => setToast(null), 3500);
+    };
 
     const fetchPortfolio = useCallback(async () => {
         try {
@@ -24,12 +25,12 @@ const Dashboard = () => {
                 .single();
 
             if (error && error.code !== 'PGRST116') {
-                console.error('Error fetching portfolio:', error);
+                if (process.env.NODE_ENV === 'development') console.error('Error fetching portfolio:', error);
             } else {
                 setPortfolio(data);
             }
-        } catch (error) {
-            console.error('Error:', error);
+        } catch (err) {
+            if (process.env.NODE_ENV === 'development') console.error('Error:', err);
         } finally {
             setLoading(false);
         }
@@ -41,10 +42,7 @@ const Dashboard = () => {
     }, [fetchPortfolio, refreshProfile]);
 
     const handleUnpublish = async () => {
-        if (!window.confirm('Are you sure you want to unpublish your portfolio?')) {
-            return;
-        }
-
+        setUnpublishModal(false);
         try {
             const { error } = await supabase
                 .from('portfolios')
@@ -53,18 +51,25 @@ const Dashboard = () => {
 
             if (error) throw error;
 
-            // Refund credit
-            await supabase
+            // Refund credit using current server value to avoid race condition
+            const { data: current, error: fetchErr } = await supabase
                 .from('user_profiles')
-                .update({ credits: profile.credits + 1 })
-                .eq('id', user.id);
+                .select('credits')
+                .eq('id', user.id)
+                .single();
+
+            if (!fetchErr && current) {
+                await supabase
+                    .from('user_profiles')
+                    .update({ credits: current.credits + 1 })
+                    .eq('id', user.id);
+            }
 
             refreshProfile();
             fetchPortfolio();
-            alert('Portfolio unpublished successfully! Credit refunded.');
-        } catch (error) {
-            console.error('Error unpublishing:', error);
-            alert('Failed to unpublish portfolio');
+            showToast('Portfolio unpublished. Credit refunded.');
+        } catch (err) {
+            showToast('Failed to unpublish portfolio.', true);
         }
     };
 
@@ -78,27 +83,44 @@ const Dashboard = () => {
 
     return (
         <div className="dashboard">
+            {/* Toast */}
+            {toast && (
+                <div style={{
+                    position: 'fixed', top: '20px', right: '20px', zIndex: 9999,
+                    background: toast.isError ? '#ef4444' : '#22c55e',
+                    color: 'white', padding: '14px 20px', borderRadius: '10px',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.2)', fontWeight: '600',
+                }}>
+                    {toast.msg}
+                </div>
+            )}
+
+            {/* Unpublish confirm modal */}
+            {unpublishModal && (
+                <div className="modal-overlay" onClick={() => setUnpublishModal(false)}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <div className="modal-icon">⚠️</div>
+                        <h2>Unpublish Portfolio?</h2>
+                        <p>Your portfolio will no longer be publicly accessible. Your credit will be refunded.</p>
+                        <div className="modal-actions">
+                            <button onClick={handleUnpublish} className="btn btn-danger">Unpublish</button>
+                            <button onClick={() => setUnpublishModal(false)} className="btn btn-secondary">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <nav className="dashboard-nav">
                 <div className="container">
                     <div className="nav-content">
                         <h2>Portfolio Builder</h2>
                         <div className="nav-actions">
-                            <span className="credits-badge">💳 {profile?.credits || 0} Credits</span>
+                            <span className="credits-badge">💳 {profile?.credits ?? 0} Credits</span>
                             {profile?.role === 'admin' && (
                                 <Link to="/admin" className="btn btn-secondary">
                                     Admin Panel
                                 </Link>
                             )}
-                            <button
-                                onClick={() => {
-                                    refreshProfile();
-                                    alert('Profile refreshed! Check console for role.');
-                                }}
-                                className="btn btn-secondary"
-                                title="Refresh profile data"
-                            >
-                                🔄 Refresh
-                            </button>
                             <button onClick={signOut} className="btn btn-secondary">
                                 Sign Out
                             </button>
@@ -117,14 +139,14 @@ const Dashboard = () => {
                     <div className="stat-card">
                         <div className="stat-icon">💳</div>
                         <div className="stat-info">
-                            <h3>{profile?.credits || 0}</h3>
+                            <h3>{profile?.credits ?? 0}</h3>
                             <p>Available Credits</p>
                         </div>
                     </div>
                     <div className="stat-card">
                         <div className="stat-icon">📊</div>
                         <div className="stat-info">
-                            <h3>{portfolio?.view_count || 0}</h3>
+                            <h3>{portfolio?.view_count ?? 0}</h3>
                             <p>Portfolio Views</p>
                         </div>
                     </div>
@@ -164,7 +186,7 @@ const Dashboard = () => {
                                         >
                                             View Live
                                         </a>
-                                        <button onClick={handleUnpublish} className="btn btn-danger">
+                                        <button onClick={() => setUnpublishModal(true)} className="btn btn-danger">
                                             Unpublish
                                         </button>
                                     </>

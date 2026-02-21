@@ -17,6 +17,7 @@ const BuyCredits = () => {
     const [proofImage, setProofImage] = useState(null);
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
+    const [toast, setToast] = useState(null);
 
     const creditPackages = [
         { credits: 1, price: 500, popular: false },
@@ -41,7 +42,7 @@ const BuyCredits = () => {
             const url = await uploadToCloudinary(file);
             setProofImage(url);
         } catch (error) {
-            alert('Failed to upload image');
+            setToast({ msg: 'Failed to upload image. Please try again.', isError: true }); setTimeout(() => setToast(null), 3500);
         } finally {
             setLoading(false);
         }
@@ -72,7 +73,7 @@ const BuyCredits = () => {
             }, 3000);
         } catch (error) {
             console.error('Error:', error);
-            alert('Failed to submit payment request');
+            setToast({ msg: 'Failed to submit payment request. Please try again.', isError: true }); setTimeout(() => setToast(null), 3500);
         } finally {
             setLoading(false);
         }
@@ -80,6 +81,16 @@ const BuyCredits = () => {
 
     return (
         <div className="buy-credits">
+            {toast && (
+                <div style={{
+                    position: 'fixed', top: '20px', right: '20px', zIndex: 9999,
+                    background: toast.isError ? '#ef4444' : '#22c55e',
+                    color: 'white', padding: '14px 20px', borderRadius: '10px',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.2)', fontWeight: '600', maxWidth: '340px'
+                }}>
+                    {toast.msg}
+                </div>
+            )}
             <div className="credits-header">
                 <div className="container">
                     <button onClick={() => navigate('/dashboard')} className="btn btn-secondary">

@@ -102,8 +102,13 @@ export const downloadCV = async (portfolio, content, images, specialty_info) => 
         document.body.removeChild(loadingEl);
 
     } catch (error) {
-        console.error('Error generating CV:', error);
-        alert('Failed to generate CV. Please try again.');
+        if (process.env.NODE_ENV === 'development') console.error('Error generating CV:', error);
+        // Show user-friendly error via DOM (no alert)
+        const errBanner = document.createElement('div');
+        errBanner.style.cssText = 'position:fixed;top:20px;right:20px;z-index:99999;background:#ef4444;color:white;padding:14px 20px;border-radius:10px;font-family:sans-serif;font-weight:600;box-shadow:0 4px 20px rgba(0,0,0,0.2)';
+        errBanner.textContent = 'Failed to generate CV. Please try again.';
+        document.body.appendChild(errBanner);
+        setTimeout(() => { if (errBanner.parentNode) errBanner.parentNode.removeChild(errBanner); }, 4000);
 
         // Cleanup on error
         const loading = document.getElementById('cv-loading');
