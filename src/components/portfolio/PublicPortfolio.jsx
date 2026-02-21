@@ -86,7 +86,7 @@ const PublicPortfolio = () => {
             setIsDarkMode(DARK_THEME_IDS.includes(portData.theme_id));
 
             // Track view — fire and forget
-            supabase.rpc('increment_portfolio_views', { portfolio_id: portData.id }).catch(() => {});
+            try { await supabase.rpc('increment_portfolio_views', { portfolio_id: portData.id }); } catch (_) {}
 
         } catch (err) {
             setError('Unexpected error: ' + err.message);
