@@ -44,7 +44,6 @@ const PortfolioBuilder = () => {
     const { portfolioId } = useParams();
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
-    const [cvUploadSuccess, setCvUploadSuccess] = useState(false);
     const [showPublishConfirm, setShowPublishConfirm] = useState(false);
     const [professions, setProfessions] = useState([]);
     const [themes] = useState(localThemes); // Initialize with local themes
@@ -212,8 +211,6 @@ const PortfolioBuilder = () => {
             const url = await uploadRawToCloudinary(file);
             setCvUrl(url);
             setFormData(prev => ({ ...prev, cv_url: url }));
-            setCvUploadSuccess(true);
-            setTimeout(() => setCvUploadSuccess(false), 3000);
         } catch (error) {
             console.error('CV upload error:', error);
             alert('Failed to upload CV: ' + error.message);
