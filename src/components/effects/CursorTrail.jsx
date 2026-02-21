@@ -60,7 +60,7 @@ const CursorTrail = () => {
 
             ctx.beginPath();
             ctx.arc(rp.x, rp.y, radius, 0, Math.PI * 2);
-            ctx.strokeStyle = `rgba(99, 102, 241, ${alpha})`;
+            ctx.strokeStyle = `rgba(67, 56, 202, ${alpha})`; // indigo-700
             ctx.lineWidth = 1.5;
             ctx.stroke();
 
@@ -80,9 +80,9 @@ const CursorTrail = () => {
 
         // Gradient stroke for the outer ring
         const grad = ctx.createRadialGradient(0, 0, outerRadius - 4, 0, 0, outerRadius + 4);
-        grad.addColorStop(0, 'rgba(99, 102, 241, 0.7)');
-        grad.addColorStop(0.5, 'rgba(139, 92, 246, 0.5)');
-        grad.addColorStop(1, 'rgba(99, 102, 241, 0)');
+        grad.addColorStop(0, 'rgba(67, 56, 202, 0.85)');
+        grad.addColorStop(0.5, 'rgba(109, 40, 217, 0.6)');
+        grad.addColorStop(1, 'rgba(67, 56, 202, 0)');
 
         ctx.beginPath();
         ctx.arc(0, 0, outerRadius, 0, Math.PI * 2);
@@ -93,8 +93,8 @@ const CursorTrail = () => {
 
         // ── Inner glow backdrop (soft fill) ──
         const glow = ctx.createRadialGradient(mx, my, 0, mx, my, 18);
-        glow.addColorStop(0, 'rgba(139, 92, 246, 0.18)');
-        glow.addColorStop(1, 'rgba(99, 102, 241, 0)');
+        glow.addColorStop(0, 'rgba(67, 56, 202, 0.15)');
+        glow.addColorStop(1, 'rgba(67, 56, 202, 0)');
         ctx.beginPath();
         ctx.arc(mx, my, 18, 0, Math.PI * 2);
         ctx.fillStyle = glow;
@@ -102,10 +102,10 @@ const CursorTrail = () => {
 
         // ── Inner dot (sharp center) ──
         ctx.beginPath();
-        ctx.arc(mx, my, 4.5, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-        ctx.shadowColor = 'rgba(139, 92, 246, 0.9)';
-        ctx.shadowBlur = 8;
+        ctx.arc(mx, my, 5, 0, Math.PI * 2);
+        ctx.fillStyle = '#312e81'; // dark indigo — visible on light AND dark backgrounds
+        ctx.shadowColor = 'rgba(109, 40, 217, 0.8)';
+        ctx.shadowBlur = 10;
         ctx.fill();
         ctx.shadowBlur = 0;
 

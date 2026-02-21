@@ -6,8 +6,6 @@ import MehedyDark from '../templates/MehedyDark';
 import './PublicPortfolio.css';
 
 // Theme IDs that render MehedyDark — all others render MehedyLight.
-// dark(2), dark-elegance(6), midnight-slate(7), carbon-gold(8),
-// purple-reign(11), crimson-red(13)
 const DARK_THEME_IDS = [2, 6, 7, 8, 11, 13];
 
 const PublicPortfolio = () => {
@@ -22,31 +20,71 @@ const PublicPortfolio = () => {
         setError(null);
 
         try {
-            // Join user_profiles so we can filter by username in one query.
-            // status = 'published' is the correct column used by the publish handler.
-            const { data, error: fetchError } = await supabase
+            // Step 1: resolve username → user_id from user_profiles
+            const { data: profileData, error: profileError } = await supabase
+                .from('user_profiles')
+                .select('id')
+                .eq('username', username)
+                .single();
+
+            if (profileError || !profileData) {
+                setError('No user found with this username.');
+                setLoading(false);
+                return;
+            }
+
+            // Step 2: fetch the published portfolio for that user
+            // Try `status = 'published'` first; fall back to `is_published = true`
+            // in case the DB uses a boolean column instead.
+            let { data: portData, error: portError } = await supabase
                 .from('portfolios')
                 .select(`
                     *,
-                    user_profiles!inner(id, full_name, username, avatar_url),
+                    user_profiles(id, full_name, username, avatar_url),
                     professions(name, icon)
                 `)
-                .eq('user_profiles.username', username)
+                .eq('user_id', profileData.id)
                 .eq('status', 'published')
-                .single();
+                .maybeSingle();
 
-            if (fetchError || !data) {
-                // PGRST116 = no rows returned
+            // Fallback: if nothing returned but no DB error, try boolean flag
+            if (!portData && !portError) {
+                const { data: fallback, error: fallbackError } = await supabase
+                    .from('portfolios')
+                    .select(`
+                        *,
+                        user_profiles(id, full_name, username, avatar_url),
+                        professions(name, icon)
+                    `)
+                    .eq('user_id', profileData.id)
+                    .eq('is_published', true)
+                    .maybeSingle();
+
+                if (fallbackError) {
+                    console.error('Fallback query error:', fallbackError);
+                } else {
+                    portData = fallback;
+                }
+            }
+
+            if (portError) {
+                console.error('Portfolio fetch error:', portError);
+                setError('Failed to load portfolio.');
+                setLoading(false);
+                return;
+            }
+
+            if (!portData) {
                 setError('Portfolio not found or not yet published.');
                 setLoading(false);
                 return;
             }
 
-            setPortfolio(data);
-            setIsDarkMode(DARK_THEME_IDS.includes(data.theme_id));
+            setPortfolio(portData);
+            setIsDarkMode(DARK_THEME_IDS.includes(portData.theme_id));
 
-            // Track view — fire-and-forget, never blocks render
-            supabase.rpc('increment_portfolio_views', { portfolio_id: data.id }).catch(() => { });
+            // Track view — fire-and-forget
+            supabase.rpc('increment_portfolio_views', { portfolio_id: portData.id }).catch(() => { });
         } catch (err) {
             console.error('Unexpected error:', err);
             setError('An unexpected error occurred. Please try again.');
