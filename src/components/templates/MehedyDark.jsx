@@ -1,106 +1,122 @@
 import React from 'react';
-import { Download, Mail, Phone, MapPin, Moon, Sun, Github, Linkedin, Twitter, Globe, Briefcase, Award, Code } from 'lucide-react';
-import CursorTrail from '../effects/CursorTrail';
+import {
+    Download, Mail, Phone, MapPin, Moon, Sun,
+    Github, Linkedin, Twitter, Globe,
+    Briefcase, Award, Code, GraduationCap
+} from 'lucide-react';
 import './MehedyDark.css';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MehedyDark – Dark portfolio template
+// ALL class names are prefixed with  md-  (zero collision with global CSS)
+// CursorTrail is rendered once in App.jsx — do NOT import it here
+// ─────────────────────────────────────────────────────────────────────────────
 
 const MehedyDark = ({ portfolio, content, images, specialty_info, onToggleTheme, isDarkMode }) => {
     const userProfile = portfolio?.user_profiles || {};
     const profession = portfolio?.professions?.name || 'Professional';
     const cvUrl = portfolio?.cv_url || content?.cv_url;
 
-    const scrollToSection = (sectionId) => {
-        const element = document.getElementById(sectionId);
-        if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+    const mdScrollTo = (sectionId) => {
+        const el = document.getElementById(sectionId);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
 
-    const handleDownloadCV = () => {
-        if (cvUrl) {
-            window.open(cvUrl, '_blank');
-        } else {
-            alert('CV not available');
-        }
+    const mdDownloadCV = () => {
+        if (cvUrl) window.open(cvUrl, '_blank');
     };
 
     return (
         <div className="mehedy-dark-portfolio">
-            <CursorTrail />
-            {/* Navigation */}
-            <nav className="portfolio-nav">
-                <div className="nav-container">
-                    <div className="nav-brand">
-                        {userProfile.full_name || 'Portfolio'}
-                    </div>
 
-                    <div className="nav-links">
-                        <a href="#about" onClick={(e) => { e.preventDefault(); scrollToSection('about'); }}>About</a>
-                        <a href="#skills" onClick={(e) => { e.preventDefault(); scrollToSection('skills'); }}>Skills</a>
-                        <a href="#experience" onClick={(e) => { e.preventDefault(); scrollToSection('experience'); }}>Experience</a>
-                        <a href="#projects" onClick={(e) => { e.preventDefault(); scrollToSection('projects'); }}>Projects</a>
-                        <a href="#contact" onClick={(e) => { e.preventDefault(); scrollToSection('contact'); }}>Contact</a>
+            {/* ── Navigation ── */}
+            <nav className="md-nav">
+                <div className="md-nav-container">
+                    <div className="md-nav-brand">{userProfile.full_name || 'Portfolio'}</div>
 
-                        {/* Download CV in Nav */}
+                    <div className="md-nav-links">
+                        {[
+                            ['about', 'About'],
+                            ['skills', 'Skills'],
+                            ['experience', 'Experience'],
+                            ['education', 'Education'],
+                            ['projects', 'Projects'],
+                            ['contact', 'Contact'],
+                        ].map(([id, label]) => (
+                            <a
+                                key={id}
+                                href={`#${id}`}
+                                onClick={(e) => { e.preventDefault(); mdScrollTo(id); }}
+                            >
+                                {label}
+                            </a>
+                        ))}
+
                         {cvUrl && (
-                            <button className="nav-cv-btn" onClick={handleDownloadCV}>
-                                <Download size={16} />
+                            <button className="md-nav-cv-btn" onClick={mdDownloadCV}>
+                                <Download size={15} />
                                 <span>CV</span>
                             </button>
                         )}
 
-                        <button className="theme-toggle" onClick={onToggleTheme} aria-label="Toggle theme">
-                            {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+                        <button className="md-theme-toggle" onClick={onToggleTheme} aria-label="Toggle theme">
+                            {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
                         </button>
                     </div>
                 </div>
             </nav>
 
-            {/* Hero Section - Hexagonal Profile on Left */}
-            <section className="hero-section" id="about">
-                <div className="hero-container">
-                    <div className="hero-content">
-                        {/* Left: Hexagonal Profile Photo */}
-                        <div className="hero-left">
-                            <div className="hexagon-wrapper">
-                                <div className="hexagon-profile">
+            {/* ── Hero Section ── */}
+            <section className="md-hero-section" id="about">
+                <div className="md-hero-container">
+                    <div className="md-hero-content">
+
+                        {/* Hexagonal profile photo */}
+                        <div className="md-hero-left">
+                            <div className="md-hexagon-wrapper">
+                                <div className="md-hexagon-profile">
                                     {images?.profile ? (
                                         <img src={images.profile} alt={userProfile.full_name} />
                                     ) : (
-                                        <div className="profile-placeholder">
-                                            {userProfile.full_name?.charAt(0) || 'P'}
+                                        <div className="md-profile-placeholder">
+                                            {userProfile.full_name?.charAt(0)?.toUpperCase() || 'P'}
                                         </div>
                                     )}
                                 </div>
                             </div>
                         </div>
 
-                        {/* Right: Name, Profession, Bio */}
-                        <div className="hero-right">
-                            <div className="hero-greeting">Hello, I'm</div>
-                            <h1 className="hero-name">{userProfile.full_name || 'Portfolio Owner'}</h1>
-                            <div className="hero-profession">{profession}</div>
+                        {/* Name / Profession / Bio */}
+                        <div className="md-hero-right">
+                            <div className="md-hero-greeting">Hello, I'm</div>
+                            <h1 className="md-hero-name">{userProfile.full_name || 'Portfolio Owner'}</h1>
+                            <div className="md-hero-profession">{profession}</div>
 
-                            <p className="hero-bio">
+                            <p className="md-hero-bio">
                                 {content?.about || 'Welcome to my portfolio. I am passionate about creating amazing experiences.'}
                             </p>
 
-                            <div className="hero-actions">
-                                <a href="#contact" className="btn-primary" onClick={(e) => { e.preventDefault(); scrollToSection('contact'); }}>
+                            <div className="md-hero-actions">
+                                <a
+                                    href="#contact"
+                                    className="md-btn-primary"
+                                    onClick={(e) => { e.preventDefault(); mdScrollTo('contact'); }}
+                                >
                                     <Mail size={18} />
                                     Get in Touch
                                 </a>
 
                                 {cvUrl && (
-                                    <button className="btn-secondary" onClick={handleDownloadCV}>
+                                    <button className="md-btn-secondary" onClick={mdDownloadCV}>
                                         <Download size={18} />
                                         Download CV
                                     </button>
                                 )}
                             </div>
 
-                            {/* Social Links */}
+                            {/* Social links */}
                             {content?.contact && (
-                                <div className="hero-socials">
+                                <div className="md-hero-socials">
                                     {content.contact.github && (
                                         <a href={content.contact.github} target="_blank" rel="noopener noreferrer" title="GitHub">
                                             <Github size={20} />
@@ -128,106 +144,129 @@ const MehedyDark = ({ portfolio, content, images, specialty_info, onToggleTheme,
                 </div>
             </section>
 
-            {/* Skills Section */}
-            <section className="skills-section" id="skills">
-                <div className="section-container">
-                    <div className="section-header">
-                        <Code className="section-icon" />
-                        <h2>Skills & Expertise</h2>
+            {/* ── Skills ── */}
+            <section className="md-skills-section" id="skills">
+                <div className="md-section-container">
+                    <div className="md-section-header">
+                        <Code className="md-section-icon" />
+                        <h2>Skills &amp; Expertise</h2>
                     </div>
-
-                    <div className="skills-grid">
-                        {content?.skills && content.skills.length > 0 ? (
-                            content.skills.map((skill, index) => (
-                                <div key={index} className="skill-card">
-                                    <div className="skill-name">{skill.name || skill}</div>
+                    <div className="md-skills-grid">
+                        {content?.skills?.length > 0 ? (
+                            content.skills.map((skill, i) => (
+                                <div key={i} className="md-skill-card">
+                                    <div className="md-skill-name">{skill.name || skill}</div>
                                     {skill.level && (
-                                        <div className="skill-level">
-                                            <div className="skill-bar">
-                                                <div
-                                                    className="skill-progress"
-                                                    style={{ width: `${skill.level}%` }}
-                                                ></div>
+                                        <div className="md-skill-level">
+                                            <div className="md-skill-bar">
+                                                <div className="md-skill-progress" style={{ width: `${skill.level}%` }} />
                                             </div>
-                                            <span className="skill-percent">{skill.level}%</span>
+                                            <span className="md-skill-percent">{skill.level}%</span>
                                         </div>
                                     )}
                                 </div>
                             ))
                         ) : (
-                            <p className="no-content">No skills added yet.</p>
+                            <p className="md-no-content">No skills added yet.</p>
                         )}
                     </div>
                 </div>
             </section>
 
-            {/* Experience Section */}
-            <section className="experience-section" id="experience">
-                <div className="section-container">
-                    <div className="section-header">
-                        <Briefcase className="section-icon" />
+            {/* ── Experience ── */}
+            <section className="md-experience-section" id="experience">
+                <div className="md-section-container">
+                    <div className="md-section-header">
+                        <Briefcase className="md-section-icon" />
                         <h2>Work Experience</h2>
                     </div>
-
-                    <div className="timeline">
-                        {content?.experience && content.experience.length > 0 ? (
-                            content.experience.map((exp, index) => (
-                                <div key={index} className="timeline-item">
-                                    <div className="timeline-marker"></div>
-                                    <div className="timeline-content">
-                                        <div className="timeline-header">
+                    <div className="md-timeline">
+                        {content?.experience?.length > 0 ? (
+                            content.experience.map((exp, i) => (
+                                <div key={i} className="md-timeline-item">
+                                    <div className="md-timeline-marker" />
+                                    <div className="md-timeline-content">
+                                        <div className="md-timeline-header">
                                             <h3>{exp.position || exp.title}</h3>
-                                            <span className="timeline-date">{exp.duration || exp.period}</span>
+                                            <span className="md-timeline-date">{exp.duration || exp.period}</span>
                                         </div>
-                                        <div className="timeline-company">{exp.company}</div>
-                                        {exp.description && <p className="timeline-desc">{exp.description}</p>}
+                                        <div className="md-timeline-company">{exp.company}</div>
+                                        {exp.description && <p className="md-timeline-desc">{exp.description}</p>}
                                     </div>
                                 </div>
                             ))
                         ) : (
-                            <p className="no-content">No experience added yet.</p>
+                            <p className="md-no-content">No experience added yet.</p>
                         )}
                     </div>
                 </div>
             </section>
 
-            {/* Projects Section */}
-            <section className="projects-section" id="projects">
-                <div className="section-container">
-                    <div className="section-header">
-                        <Award className="section-icon" />
+            {/* ── Education ── (was missing — data was stored but never rendered) */}
+            <section className="md-education-section" id="education">
+                <div className="md-section-container">
+                    <div className="md-section-header">
+                        <GraduationCap className="md-section-icon" />
+                        <h2>Education</h2>
+                    </div>
+                    <div className="md-timeline">
+                        {content?.education?.length > 0 ? (
+                            content.education.map((edu, i) => (
+                                <div key={i} className="md-timeline-item">
+                                    <div className="md-timeline-marker" />
+                                    <div className="md-timeline-content">
+                                        <div className="md-timeline-header">
+                                            <h3>{edu.degree}</h3>
+                                            <span className="md-timeline-date">{edu.year}</span>
+                                        </div>
+                                        <div className="md-timeline-company">{edu.institution}</div>
+                                        {edu.description && <p className="md-timeline-desc">{edu.description}</p>}
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="md-no-content">No education added yet.</p>
+                        )}
+                    </div>
+                </div>
+            </section>
+
+            {/* ── Projects ── */}
+            <section className="md-projects-section" id="projects">
+                <div className="md-section-container">
+                    <div className="md-section-header">
+                        <Award className="md-section-icon" />
                         <h2>Featured Projects</h2>
                     </div>
-
-                    <div className="projects-grid">
-                        {content?.projects && content.projects.length > 0 ? (
-                            content.projects.map((project, index) => (
-                                <div key={index} className="project-card">
+                    <div className="md-projects-grid">
+                        {content?.projects?.length > 0 ? (
+                            content.projects.map((project, i) => (
+                                <div key={i} className="md-project-card">
                                     {project.image && (
-                                        <div className="project-image">
-                                            <img src={project.image} alt={project.name} />
+                                        <div className="md-project-image">
+                                            <img src={project.image} alt={project.name || project.title} />
                                         </div>
                                     )}
-                                    <div className="project-content">
+                                    <div className="md-project-content">
                                         <h3>{project.name || project.title}</h3>
                                         <p>{project.description}</p>
                                         {project.technologies && (
-                                            <div className="project-tags">
-                                                {project.technologies.split(',').map((tech, i) => (
-                                                    <span key={i} className="tag">{tech.trim()}</span>
+                                            <div className="md-project-tags">
+                                                {project.technologies.split(',').map((tech, ti) => (
+                                                    <span key={ti} className="md-tag">{tech.trim()}</span>
                                                 ))}
                                             </div>
                                         )}
                                         {(project.liveUrl || project.githubUrl || project.link) && (
-                                            <div className="project-links">
+                                            <div className="md-project-links">
                                                 {(project.liveUrl || project.link) && (
                                                     <a href={project.liveUrl || project.link} target="_blank" rel="noopener noreferrer">
-                                                        <Globe size={16} /> View Project
+                                                        <Globe size={15} /> View Project
                                                     </a>
                                                 )}
                                                 {project.githubUrl && (
                                                     <a href={project.githubUrl} target="_blank" rel="noopener noreferrer">
-                                                        <Github size={16} /> Code
+                                                        <Github size={15} /> Code
                                                     </a>
                                                 )}
                                             </div>
@@ -236,51 +275,59 @@ const MehedyDark = ({ portfolio, content, images, specialty_info, onToggleTheme,
                                 </div>
                             ))
                         ) : (
-                            <p className="no-content">No projects added yet.</p>
+                            <p className="md-no-content">No projects added yet.</p>
                         )}
                     </div>
                 </div>
             </section>
 
-            {/* Contact Section */}
-            <section className="contact-section" id="contact">
-                <div className="section-container">
-                    <div className="section-header">
-                        <Mail className="section-icon" />
+            {/* ── Contact ── */}
+            <section className="md-contact-section" id="contact">
+                <div className="md-section-container">
+                    <div className="md-section-header">
+                        <Mail className="md-section-icon" />
                         <h2>Get In Touch</h2>
                     </div>
-
-                    <div className="contact-content">
-                        <p className="contact-intro">
-                            Interested in working together? Feel free to reach out!
-                        </p>
-
-                        <div className="contact-info">
+                    <div className="md-contact-content">
+                        <p className="md-contact-intro">Interested in working together? Feel free to reach out!</p>
+                        <div className="md-contact-info">
                             {content?.contact?.email && (
-                                <a href={`mailto:${content.contact.email}`} className="contact-item">
+                                <a href={`mailto:${content.contact.email}`} className="md-contact-item">
                                     <Mail size={20} />
                                     <span>{content.contact.email}</span>
                                 </a>
                             )}
                             {content?.contact?.phone && (
-                                <a href={`tel:${content.contact.phone}`} className="contact-item">
+                                <a href={`tel:${content.contact.phone}`} className="md-contact-item">
                                     <Phone size={20} />
                                     <span>{content.contact.phone}</span>
                                 </a>
                             )}
                             {content?.contact?.location && (
-                                <div className="contact-item">
+                                <div className="md-contact-item">
                                     <MapPin size={20} />
                                     <span>{content.contact.location}</span>
                                 </div>
+                            )}
+                            {content?.contact?.github && (
+                                <a href={content.contact.github} className="md-contact-item" target="_blank" rel="noopener noreferrer">
+                                    <Github size={20} />
+                                    <span>{content.contact.github}</span>
+                                </a>
+                            )}
+                            {content?.contact?.linkedin && (
+                                <a href={content.contact.linkedin} className="md-contact-item" target="_blank" rel="noopener noreferrer">
+                                    <Linkedin size={20} />
+                                    <span>{content.contact.linkedin}</span>
+                                </a>
                             )}
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* Footer */}
-            <footer className="portfolio-footer">
+            {/* ── Footer ── */}
+            <footer className="md-portfolio-footer">
                 <p>© {new Date().getFullYear()} {userProfile.full_name}. Crafted with passion.</p>
             </footer>
         </div>

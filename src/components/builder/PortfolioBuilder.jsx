@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../services/supabase';
-import { uploadToCloudinary } from '../../services/cloudinary';
+import { uploadToCloudinary, uploadRawToCloudinary } from '../../services/cloudinary';
 import { themes as localThemes } from '../../stores/themeStore';
 import { Upload, FileText, Eye, X } from 'lucide-react';
 import './PortfolioBuilder.css';
@@ -28,12 +28,12 @@ const mapThemeIdToDatabase = (stringThemeId) => {
         'lime-fresh': 14,
         'teal-mint': 15
     };
-    
+
     // If it's already a number, return it
     if (typeof stringThemeId === 'number') {
         return stringThemeId;
     }
-    
+
     // If it's a string, map it to the database ID
     return themeMapping[stringThemeId] || 1; // Default to 1 if not found
 };
@@ -44,6 +44,8 @@ const PortfolioBuilder = () => {
     const { portfolioId } = useParams();
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
+    const [cvUploadSuccess, setCvUploadSuccess] = useState(false);
+    const [showPublishConfirm, setShowPublishConfirm] = useState(false);
     const [professions, setProfessions] = useState([]);
     const [themes] = useState(localThemes); // Initialize with local themes
     const [showCreditModal, setShowCreditModal] = useState(false);
@@ -157,7 +159,7 @@ const PortfolioBuilder = () => {
                     profile: '',
                 },
             });
-            
+
             // Set CV URL state
             setCvUrl(data.cv_url || '');
         }
@@ -187,40 +189,34 @@ const PortfolioBuilder = () => {
     // ============================================================================
     // CV UPLOAD HANDLERS
     // ============================================================================
-    
+
     const handleCVUpload = async (e) => {
         const file = e.target.files[0];
-        
         if (!file) return;
-        
-        // Validate file type
-        if (file.type !== 'application/pdf') {
-            alert('Please upload a PDF file');
+
+        // Accept PDF and DOCX
+        const allowed = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+        if (!allowed.includes(file.type)) {
+            alert('Please upload a PDF or DOCX file');
             return;
         }
-        
-        // Validate file size (max 5MB)
-        if (file.size > 5 * 1024 * 1024) {
-            alert('File size must be less than 5MB');
+
+        if (file.size > 10 * 1024 * 1024) {
+            alert('File size must be less than 10 MB');
             return;
         }
-        
+
         setCvUploading(true);
-        
         try {
-            // Upload to Cloudinary
-            const { url } = await uploadToCloudinary(file);
-            
+            // uploadRawToCloudinary uses /auto/upload — correct for PDFs/DOCX
+            const url = await uploadRawToCloudinary(file);
             setCvUrl(url);
-            setFormData(prev => ({
-                ...prev,
-                cv_url: url
-            }));
-            
-            alert('CV uploaded successfully!');
+            setFormData(prev => ({ ...prev, cv_url: url }));
+            setCvUploadSuccess(true);
+            setTimeout(() => setCvUploadSuccess(false), 3000);
         } catch (error) {
             console.error('CV upload error:', error);
-            alert('Failed to upload CV. Please try again.');
+            alert('Failed to upload CV: ' + error.message);
         } finally {
             setCvUploading(false);
         }
@@ -314,16 +310,14 @@ const PortfolioBuilder = () => {
 
                 setLoading(true);
                 try {
-                    const { url } = await uploadToCloudinary(file);
-                    setFormData({
-                        ...formData,
-                        images: {
-                            ...formData.images,
-                            [type]: url,
-                        },
-                    });
+                    // uploadToCloudinary now returns a plain string URL
+                    const url = await uploadToCloudinary(file);
+                    setFormData(prev => ({
+                        ...prev,
+                        images: { ...prev.images, [type]: url },
+                    }));
                 } catch (error) {
-                    alert('Failed to upload image');
+                    alert('Failed to upload image: ' + error.message);
                 } finally {
                     setLoading(false);
                 }
@@ -491,63 +485,7 @@ const PortfolioBuilder = () => {
             return;
         }
 
-        if (!window.confirm('Publish your portfolio? This will use 1 credit.')) {
-            return;
-        }
-
-        setLoading(true);
-        try {
-            const portfolioData = {
-                user_id: user.id,
-                profession_id: formData.profession_id,
-                theme_id: mapThemeIdToDatabase(formData.theme_id),
-                username: formData.username,
-                cv_url: cvUrl || null, // Include CV URL
-                specialty_info: formData.specialty_info,
-                content: formData.content,
-                images: formData.images,
-            };
-
-            let portfolioIdToPublish = portfolioId;
-
-            if (portfolioId) {
-                const { error } = await supabase
-                    .from('portfolios')
-                    .update(portfolioData)
-                    .eq('id', portfolioId);
-
-                if (error) throw error;
-            } else {
-                const { data, error } = await supabase
-                    .from('portfolios')
-                    .insert([portfolioData])
-                    .select()
-                    .single();
-
-                if (error) throw error;
-                if (data) portfolioIdToPublish = data.id;
-            }
-
-            if (!portfolioIdToPublish) {
-                throw new Error('Failed to create portfolio ID');
-            }
-
-            const { error: publishError } = await supabase.rpc('publish_portfolio_safe', {
-                p_portfolio_id: portfolioIdToPublish,
-                p_user_id: user.id,
-            });
-
-            if (publishError) throw publishError;
-
-            refreshProfile();
-            alert('Portfolio published successfully!');
-            navigate('/dashboard');
-        } catch (error) {
-            console.error('Error publishing:', error);
-            alert(error.message || 'Failed to publish portfolio');
-        } finally {
-            setLoading(false);
-        }
+        setShowPublishConfirm(true);
     };
 
     // ============================================================================
@@ -829,7 +767,7 @@ const PortfolioBuilder = () => {
                             <p className="step-description" style={{ marginBottom: '1rem' }}>
                                 Upload your resume/CV (PDF only, max 5MB). This will appear as a download button in your portfolio.
                             </p>
-                            
+
                             <div className="cv-upload-container">
                                 {!cvUrl ? (
                                     <div className="upload-area">
@@ -862,16 +800,16 @@ const PortfolioBuilder = () => {
                                             <span>CV uploaded successfully!</span>
                                         </div>
                                         <div className="cv-actions">
-                                            <a 
-                                                href={cvUrl} 
-                                                target="_blank" 
+                                            <a
+                                                href={cvUrl}
+                                                target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="btn-view-cv"
                                             >
                                                 <Eye size={16} />
                                                 Preview
                                             </a>
-                                            <button 
+                                            <button
                                                 type="button"
                                                 onClick={removeCVFile}
                                                 className="btn-remove-cv"
@@ -1352,6 +1290,79 @@ const PortfolioBuilder = () => {
                                 Buy Credits
                             </button>
                             <button onClick={() => setShowCreditModal(false)} className="btn btn-secondary">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showPublishConfirm && (
+                <div className="modal-overlay" onClick={() => setShowPublishConfirm(false)}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-icon">🚀</div>
+                        <h2>Publish Portfolio?</h2>
+                        <p>This will use <strong>1 credit</strong> from your balance
+                            &nbsp;(you have <strong>{profile?.credits ?? 0}</strong>). Your portfolio
+                            will be publicly accessible at:
+                        </p>
+                        <p style={{ fontWeight: 700, marginTop: 8 }}>
+                            /{formData.username || 'your-username'}
+                        </p>
+                        <div className="modal-actions">
+                            <button
+                                onClick={async () => {
+                                    setShowPublishConfirm(false);
+                                    // Re-run the actual publish body
+                                    setLoading(true);
+                                    try {
+                                        const portfolioData = {
+                                            user_id: user.id,
+                                            profession_id: formData.profession_id,
+                                            theme_id: mapThemeIdToDatabase(formData.theme_id),
+                                            username: formData.username,
+                                            cv_url: cvUrl || null,
+                                            specialty_info: formData.specialty_info,
+                                            content: formData.content,
+                                            images: formData.images,
+                                        };
+
+                                        let portfolioIdToPublish = portfolioId;
+
+                                        if (portfolioId) {
+                                            const { error } = await supabase
+                                                .from('portfolios').update(portfolioData).eq('id', portfolioId);
+                                            if (error) throw error;
+                                        } else {
+                                            const { data, error } = await supabase
+                                                .from('portfolios').insert([portfolioData]).select().single();
+                                            if (error) throw error;
+                                            if (data) portfolioIdToPublish = data.id;
+                                        }
+
+                                        if (!portfolioIdToPublish) throw new Error('Failed to create portfolio ID');
+
+                                        const { error: publishError } = await supabase.rpc('publish_portfolio_safe', {
+                                            p_portfolio_id: portfolioIdToPublish,
+                                            p_user_id: user.id,
+                                        });
+
+                                        if (publishError) throw publishError;
+                                        refreshProfile();
+                                        navigate('/dashboard');
+                                    } catch (error) {
+                                        console.error('Error publishing:', error);
+                                        alert(error.message || 'Failed to publish portfolio');
+                                    } finally {
+                                        setLoading(false);
+                                    }
+                                }}
+                                className="btn btn-primary"
+                                disabled={loading}
+                            >
+                                {loading ? 'Publishing…' : 'Yes, Publish (–1 credit)'}
+                            </button>
+                            <button onClick={() => setShowPublishConfirm(false)} className="btn btn-secondary">
                                 Cancel
                             </button>
                         </div>

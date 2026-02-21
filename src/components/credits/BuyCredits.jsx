@@ -38,7 +38,7 @@ const BuyCredits = () => {
 
         setLoading(true);
         try {
-            const { url } = await uploadToCloudinary(file);
+            const url = await uploadToCloudinary(file);
             setProofImage(url);
         } catch (error) {
             alert('Failed to upload image');

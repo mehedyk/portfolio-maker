@@ -5,89 +5,50 @@ import MehedyLight from '../templates/MehedyLight';
 import MehedyDark from '../templates/MehedyDark';
 import './PublicPortfolio.css';
 
+// Theme IDs that render MehedyDark — all others render MehedyLight.
+// dark(2), dark-elegance(6), midnight-slate(7), carbon-gold(8),
+// purple-reign(11), crimson-red(13)
+const DARK_THEME_IDS = [2, 6, 7, 8, 11, 13];
+
 const PublicPortfolio = () => {
     const { username } = useParams();
     const [portfolio, setPortfolio] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-
-    // Theme State - Default to light
-    const [currentThemeId, setCurrentThemeId] = useState('light');
+    const [isDarkMode, setIsDarkMode] = useState(false);
 
     const fetchPortfolio = useCallback(async () => {
-        console.log('Fetching portfolio for username:', username);
+        setLoading(true);
+        setError(null);
 
         try {
-            const { data: portfolioData, error: portfolioError } = await supabase
+            // Join user_profiles so we can filter by username in one query.
+            // status = 'published' is the correct column used by the publish handler.
+            const { data, error: fetchError } = await supabase
                 .from('portfolios')
-                .select('*, professions(*), themes(*)')
-                .eq('username', username)
-                .eq('is_published', true)
+                .select(`
+                    *,
+                    user_profiles!inner(id, full_name, username, avatar_url),
+                    professions(name, icon)
+                `)
+                .eq('user_profiles.username', username)
+                .eq('status', 'published')
                 .single();
 
-            if (portfolioError) {
-                console.error('Portfolio error:', portfolioError);
-                if (portfolioError.code === 'PGRST116') {
-                    setError('Portfolio not found or not published yet.');
-                } else {
-                    setError('Error loading portfolio: ' + portfolioError.message);
-                }
+            if (fetchError || !data) {
+                // PGRST116 = no rows returned
+                setError('Portfolio not found or not yet published.');
                 setLoading(false);
                 return;
             }
 
-            if (!portfolioData) {
-                setError('Portfolio not found.');
-                setLoading(false);
-                return;
-            }
+            setPortfolio(data);
+            setIsDarkMode(DARK_THEME_IDS.includes(data.theme_id));
 
-            const { data: userProfile, error: userError } = await supabase
-                .from('user_profiles')
-                .select('*')
-                .eq('id', portfolioData.user_id)
-                .single();
-
-            if (userError) {
-                console.error('User profile error:', userError);
-            }
-
-            const combinedData = {
-                ...portfolioData,
-                user_profiles: userProfile || {
-                    full_name: 'Portfolio Owner',
-                    email: ''
-                }
-            };
-
-            setPortfolio(combinedData);
-
-            // FIXED: Determine theme based on theme_id (numeric from database)
-            // Map numeric theme IDs to light/dark mode
-            const themeId = combinedData.theme_id;
-            
-            // Dark themes: 2, 6, 7, 8 (dark, dark-elegance, midnight-slate, carbon-gold)
-            const darkThemeIds = [2, 6, 7, 8];
-            
-            if (darkThemeIds.includes(themeId)) {
-                setCurrentThemeId('dark');
-            } else {
-                setCurrentThemeId('light');
-            }
-
-            // Increment view count (non-blocking)
-            supabase
-                .from('portfolios')
-                .update({ view_count: (portfolioData.view_count || 0) + 1 })
-                .eq('id', portfolioData.id)
-                .then(({ error: updateError }) => {
-                    if (updateError) {
-                        console.error('Error updating view count:', updateError);
-                    }
-                });
-
-        } catch (error) {
-            console.error('Unexpected error:', error);
+            // Track view — fire-and-forget, never blocks render
+            supabase.rpc('increment_portfolio_views', { portfolio_id: data.id }).catch(() => { });
+        } catch (err) {
+            console.error('Unexpected error:', err);
             setError('An unexpected error occurred. Please try again.');
         } finally {
             setLoading(false);
@@ -98,14 +59,12 @@ const PublicPortfolio = () => {
         fetchPortfolio();
     }, [fetchPortfolio]);
 
-    const toggleTheme = () => {
-        setCurrentThemeId(prev => prev === 'light' ? 'dark' : 'light');
-    };
+    const handleToggleTheme = () => setIsDarkMode(prev => !prev);
 
     if (loading) {
         return (
             <div className="loading-container">
-                <div className="spinner"></div>
+                <div className="spinner" />
                 <p style={{ marginTop: '20px', color: 'var(--gray-600)' }}>Loading portfolio...</p>
             </div>
         );
@@ -135,29 +94,16 @@ const PublicPortfolio = () => {
     const images = portfolio.images || {};
     const specialty_info = portfolio.specialty_info || {};
 
-    // Render the appropriate template based on currentThemeId
-    if (currentThemeId === 'dark') {
-        return (
-            <MehedyDark
-                portfolio={portfolio}
-                content={content}
-                images={images}
-                specialty_info={specialty_info}
-                onToggleTheme={toggleTheme}
-                isDarkMode={true}
-            />
-        );
-    }
+    const Template = isDarkMode ? MehedyDark : MehedyLight;
 
-    // Default to Light theme
     return (
-        <MehedyLight
+        <Template
             portfolio={portfolio}
             content={content}
             images={images}
             specialty_info={specialty_info}
-            onToggleTheme={toggleTheme}
-            isDarkMode={false}
+            onToggleTheme={handleToggleTheme}
+            isDarkMode={isDarkMode}
         />
     );
 };

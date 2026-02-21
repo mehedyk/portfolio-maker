@@ -1,106 +1,122 @@
 import React from 'react';
-import { Download, Mail, Phone, MapPin, Moon, Sun, Github, Linkedin, Twitter, Globe, Briefcase, Award, Code } from 'lucide-react';
-import CursorTrail from '../effects/CursorTrail';
+import {
+    Download, Mail, Phone, MapPin, Moon, Sun,
+    Github, Linkedin, Twitter, Globe,
+    Briefcase, Award, Code, GraduationCap
+} from 'lucide-react';
 import './MehedyLight.css';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MehedyLight – Light portfolio template
+// ALL class names are prefixed with  ml-  (zero collision with global CSS)
+// CursorTrail is rendered once in App.jsx — do NOT import it here
+// ─────────────────────────────────────────────────────────────────────────────
 
 const MehedyLight = ({ portfolio, content, images, specialty_info, onToggleTheme, isDarkMode }) => {
     const userProfile = portfolio?.user_profiles || {};
     const profession = portfolio?.professions?.name || 'Professional';
     const cvUrl = portfolio?.cv_url || content?.cv_url;
 
-    const scrollToSection = (sectionId) => {
-        const element = document.getElementById(sectionId);
-        if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+    const mlScrollTo = (sectionId) => {
+        const el = document.getElementById(sectionId);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
 
-    const handleDownloadCV = () => {
-        if (cvUrl) {
-            window.open(cvUrl, '_blank');
-        } else {
-            alert('CV not available');
-        }
+    const mlDownloadCV = () => {
+        if (cvUrl) window.open(cvUrl, '_blank');
     };
 
     return (
         <div className="mehedy-light-portfolio">
-            <CursorTrail />
-            {/* Navigation */}
-            <nav className="portfolio-nav">
-                <div className="nav-container">
-                    <div className="nav-brand">
-                        {userProfile.full_name || 'Portfolio'}
-                    </div>
 
-                    <div className="nav-links">
-                        <a href="#about" onClick={(e) => { e.preventDefault(); scrollToSection('about'); }}>About</a>
-                        <a href="#skills" onClick={(e) => { e.preventDefault(); scrollToSection('skills'); }}>Skills</a>
-                        <a href="#experience" onClick={(e) => { e.preventDefault(); scrollToSection('experience'); }}>Experience</a>
-                        <a href="#projects" onClick={(e) => { e.preventDefault(); scrollToSection('projects'); }}>Projects</a>
-                        <a href="#contact" onClick={(e) => { e.preventDefault(); scrollToSection('contact'); }}>Contact</a>
+            {/* ── Navigation ── */}
+            <nav className="ml-nav">
+                <div className="ml-nav-container">
+                    <div className="ml-nav-brand">{userProfile.full_name || 'Portfolio'}</div>
 
-                        {/* Download CV in Nav */}
+                    <div className="ml-nav-links">
+                        {[
+                            ['about', 'About'],
+                            ['skills', 'Skills'],
+                            ['experience', 'Experience'],
+                            ['education', 'Education'],
+                            ['projects', 'Projects'],
+                            ['contact', 'Contact'],
+                        ].map(([id, label]) => (
+                            <a
+                                key={id}
+                                href={`#${id}`}
+                                onClick={(e) => { e.preventDefault(); mlScrollTo(id); }}
+                            >
+                                {label}
+                            </a>
+                        ))}
+
                         {cvUrl && (
-                            <button className="nav-cv-btn" onClick={handleDownloadCV}>
-                                <Download size={16} />
+                            <button className="ml-nav-cv-btn" onClick={mlDownloadCV}>
+                                <Download size={15} />
                                 <span>CV</span>
                             </button>
                         )}
 
-                        <button className="theme-toggle" onClick={onToggleTheme} aria-label="Toggle theme">
-                            {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+                        <button className="ml-theme-toggle" onClick={onToggleTheme} aria-label="Toggle theme">
+                            {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
                         </button>
                     </div>
                 </div>
             </nav>
 
-            {/* Hero Section - Redesigned with left hexagon profile */}
-            <section className="hero-section" id="about">
-                <div className="hero-container">
-                    <div className="hero-content">
-                        {/* Left: Hexagonal Profile Photo */}
-                        <div className="hero-left">
-                            <div className="hexagon-wrapper">
-                                <div className="hexagon-profile">
+            {/* ── Hero Section ── */}
+            <section className="ml-hero-section" id="about">
+                <div className="ml-hero-container">
+                    <div className="ml-hero-content">
+
+                        {/* Hexagonal profile photo */}
+                        <div className="ml-hero-left">
+                            <div className="ml-hexagon-wrapper">
+                                <div className="ml-hexagon-profile">
                                     {images?.profile ? (
                                         <img src={images.profile} alt={userProfile.full_name} />
                                     ) : (
-                                        <div className="profile-placeholder">
-                                            {userProfile.full_name?.charAt(0) || 'P'}
+                                        <div className="ml-profile-placeholder">
+                                            {userProfile.full_name?.charAt(0)?.toUpperCase() || 'P'}
                                         </div>
                                     )}
                                 </div>
                             </div>
                         </div>
 
-                        {/* Right: Name, Profession, Bio */}
-                        <div className="hero-right">
-                            <div className="hero-greeting">Hello, I'm</div>
-                            <h1 className="hero-name">{userProfile.full_name || 'Portfolio Owner'}</h1>
-                            <div className="hero-profession">{profession}</div>
+                        {/* Name / Profession / Bio */}
+                        <div className="ml-hero-right">
+                            <div className="ml-hero-greeting">Hello, I'm</div>
+                            <h1 className="ml-hero-name">{userProfile.full_name || 'Portfolio Owner'}</h1>
+                            <div className="ml-hero-profession">{profession}</div>
 
-                            <p className="hero-bio">
+                            <p className="ml-hero-bio">
                                 {content?.about || 'Welcome to my portfolio. I am passionate about creating amazing experiences.'}
                             </p>
 
-                            <div className="hero-actions">
-                                <a href="#contact" className="btn-primary" onClick={(e) => { e.preventDefault(); scrollToSection('contact'); }}>
+                            <div className="ml-hero-actions">
+                                <a
+                                    href="#contact"
+                                    className="ml-btn-primary"
+                                    onClick={(e) => { e.preventDefault(); mlScrollTo('contact'); }}
+                                >
                                     <Mail size={18} />
                                     Get in Touch
                                 </a>
 
                                 {cvUrl && (
-                                    <button className="btn-secondary" onClick={handleDownloadCV}>
+                                    <button className="ml-btn-secondary" onClick={mlDownloadCV}>
                                         <Download size={18} />
                                         Download CV
                                     </button>
                                 )}
                             </div>
 
-                            {/* Social Links */}
+                            {/* Social links */}
                             {content?.contact && (
-                                <div className="hero-socials">
+                                <div className="ml-hero-socials">
                                     {content.contact.github && (
                                         <a href={content.contact.github} target="_blank" rel="noopener noreferrer" title="GitHub">
                                             <Github size={20} />
@@ -128,106 +144,129 @@ const MehedyLight = ({ portfolio, content, images, specialty_info, onToggleTheme
                 </div>
             </section>
 
-            {/* Skills Section - Compact */}
-            <section className="skills-section" id="skills">
-                <div className="section-container">
-                    <div className="section-header">
-                        <Code className="section-icon" />
-                        <h2>Skills & Expertise</h2>
+            {/* ── Skills ── */}
+            <section className="ml-skills-section" id="skills">
+                <div className="ml-section-container">
+                    <div className="ml-section-header">
+                        <Code className="ml-section-icon" />
+                        <h2>Skills &amp; Expertise</h2>
                     </div>
-
-                    <div className="skills-grid">
-                        {content?.skills && content.skills.length > 0 ? (
-                            content.skills.map((skill, index) => (
-                                <div key={index} className="skill-card">
-                                    <div className="skill-name">{skill.name || skill}</div>
+                    <div className="ml-skills-grid">
+                        {content?.skills?.length > 0 ? (
+                            content.skills.map((skill, i) => (
+                                <div key={i} className="ml-skill-card">
+                                    <div className="ml-skill-name">{skill.name || skill}</div>
                                     {skill.level && (
-                                        <div className="skill-level">
-                                            <div className="skill-bar">
-                                                <div
-                                                    className="skill-progress"
-                                                    style={{ width: `${skill.level}%` }}
-                                                ></div>
+                                        <div className="ml-skill-level">
+                                            <div className="ml-skill-bar">
+                                                <div className="ml-skill-progress" style={{ width: `${skill.level}%` }} />
                                             </div>
-                                            <span className="skill-percent">{skill.level}%</span>
+                                            <span className="ml-skill-percent">{skill.level}%</span>
                                         </div>
                                     )}
                                 </div>
                             ))
                         ) : (
-                            <p className="no-content">No skills added yet.</p>
+                            <p className="ml-no-content">No skills added yet.</p>
                         )}
                     </div>
                 </div>
             </section>
 
-            {/* Experience Section - Compact */}
-            <section className="experience-section" id="experience">
-                <div className="section-container">
-                    <div className="section-header">
-                        <Briefcase className="section-icon" />
+            {/* ── Experience ── */}
+            <section className="ml-experience-section" id="experience">
+                <div className="ml-section-container">
+                    <div className="ml-section-header">
+                        <Briefcase className="ml-section-icon" />
                         <h2>Work Experience</h2>
                     </div>
-
-                    <div className="timeline">
-                        {content?.experience && content.experience.length > 0 ? (
-                            content.experience.map((exp, index) => (
-                                <div key={index} className="timeline-item">
-                                    <div className="timeline-marker"></div>
-                                    <div className="timeline-content">
-                                        <div className="timeline-header">
+                    <div className="ml-timeline">
+                        {content?.experience?.length > 0 ? (
+                            content.experience.map((exp, i) => (
+                                <div key={i} className="ml-timeline-item">
+                                    <div className="ml-timeline-marker" />
+                                    <div className="ml-timeline-content">
+                                        <div className="ml-timeline-header">
                                             <h3>{exp.position || exp.title}</h3>
-                                            <span className="timeline-date">{exp.duration || exp.period}</span>
+                                            <span className="ml-timeline-date">{exp.duration || exp.period}</span>
                                         </div>
-                                        <div className="timeline-company">{exp.company}</div>
-                                        {exp.description && <p className="timeline-desc">{exp.description}</p>}
+                                        <div className="ml-timeline-company">{exp.company}</div>
+                                        {exp.description && <p className="ml-timeline-desc">{exp.description}</p>}
                                     </div>
                                 </div>
                             ))
                         ) : (
-                            <p className="no-content">No experience added yet.</p>
+                            <p className="ml-no-content">No experience added yet.</p>
                         )}
                     </div>
                 </div>
             </section>
 
-            {/* Projects Section - Compact Grid */}
-            <section className="projects-section" id="projects">
-                <div className="section-container">
-                    <div className="section-header">
-                        <Award className="section-icon" />
+            {/* ── Education ── (was missing — data was stored but never rendered) */}
+            <section className="ml-education-section" id="education">
+                <div className="ml-section-container">
+                    <div className="ml-section-header">
+                        <GraduationCap className="ml-section-icon" />
+                        <h2>Education</h2>
+                    </div>
+                    <div className="ml-timeline">
+                        {content?.education?.length > 0 ? (
+                            content.education.map((edu, i) => (
+                                <div key={i} className="ml-timeline-item">
+                                    <div className="ml-timeline-marker" />
+                                    <div className="ml-timeline-content">
+                                        <div className="ml-timeline-header">
+                                            <h3>{edu.degree}</h3>
+                                            <span className="ml-timeline-date">{edu.year}</span>
+                                        </div>
+                                        <div className="ml-timeline-company">{edu.institution}</div>
+                                        {edu.description && <p className="ml-timeline-desc">{edu.description}</p>}
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="ml-no-content">No education added yet.</p>
+                        )}
+                    </div>
+                </div>
+            </section>
+
+            {/* ── Projects ── */}
+            <section className="ml-projects-section" id="projects">
+                <div className="ml-section-container">
+                    <div className="ml-section-header">
+                        <Award className="ml-section-icon" />
                         <h2>Featured Projects</h2>
                     </div>
-
-                    <div className="projects-grid">
-                        {content?.projects && content.projects.length > 0 ? (
-                            content.projects.map((project, index) => (
-                                <div key={index} className="project-card">
+                    <div className="ml-projects-grid">
+                        {content?.projects?.length > 0 ? (
+                            content.projects.map((project, i) => (
+                                <div key={i} className="ml-project-card">
                                     {project.image && (
-                                        <div className="project-image">
-                                            <img src={project.image} alt={project.name} />
+                                        <div className="ml-project-image">
+                                            <img src={project.image} alt={project.name || project.title} />
                                         </div>
                                     )}
-                                    <div className="project-content">
+                                    <div className="ml-project-content">
                                         <h3>{project.name || project.title}</h3>
                                         <p>{project.description}</p>
                                         {project.technologies && (
-                                            <div className="project-tags">
-                                                {project.technologies.split(',').map((tech, i) => (
-                                                    <span key={i} className="tag">{tech.trim()}</span>
+                                            <div className="ml-project-tags">
+                                                {project.technologies.split(',').map((tech, ti) => (
+                                                    <span key={ti} className="ml-tag">{tech.trim()}</span>
                                                 ))}
                                             </div>
                                         )}
                                         {(project.liveUrl || project.githubUrl || project.link) && (
-                                            <div className="project-links">
+                                            <div className="ml-project-links">
                                                 {(project.liveUrl || project.link) && (
                                                     <a href={project.liveUrl || project.link} target="_blank" rel="noopener noreferrer">
-                                                        <Globe size={16} /> View Project
+                                                        <Globe size={15} /> View Project
                                                     </a>
                                                 )}
                                                 {project.githubUrl && (
                                                     <a href={project.githubUrl} target="_blank" rel="noopener noreferrer">
-                                                        <Github size={16} /> Code
+                                                        <Github size={15} /> Code
                                                     </a>
                                                 )}
                                             </div>
@@ -236,51 +275,59 @@ const MehedyLight = ({ portfolio, content, images, specialty_info, onToggleTheme
                                 </div>
                             ))
                         ) : (
-                            <p className="no-content">No projects added yet.</p>
+                            <p className="ml-no-content">No projects added yet.</p>
                         )}
                     </div>
                 </div>
             </section>
 
-            {/* Contact Section - Compact */}
-            <section className="contact-section" id="contact">
-                <div className="section-container">
-                    <div className="section-header">
-                        <Mail className="section-icon" />
+            {/* ── Contact ── */}
+            <section className="ml-contact-section" id="contact">
+                <div className="ml-section-container">
+                    <div className="ml-section-header">
+                        <Mail className="ml-section-icon" />
                         <h2>Get In Touch</h2>
                     </div>
-
-                    <div className="contact-content">
-                        <p className="contact-intro">
-                            Interested in working together? Feel free to reach out!
-                        </p>
-
-                        <div className="contact-info">
+                    <div className="ml-contact-content">
+                        <p className="ml-contact-intro">Interested in working together? Feel free to reach out!</p>
+                        <div className="ml-contact-info">
                             {content?.contact?.email && (
-                                <a href={`mailto:${content.contact.email}`} className="contact-item">
+                                <a href={`mailto:${content.contact.email}`} className="ml-contact-item">
                                     <Mail size={20} />
                                     <span>{content.contact.email}</span>
                                 </a>
                             )}
                             {content?.contact?.phone && (
-                                <a href={`tel:${content.contact.phone}`} className="contact-item">
+                                <a href={`tel:${content.contact.phone}`} className="ml-contact-item">
                                     <Phone size={20} />
                                     <span>{content.contact.phone}</span>
                                 </a>
                             )}
                             {content?.contact?.location && (
-                                <div className="contact-item">
+                                <div className="ml-contact-item">
                                     <MapPin size={20} />
                                     <span>{content.contact.location}</span>
                                 </div>
+                            )}
+                            {content?.contact?.github && (
+                                <a href={content.contact.github} className="ml-contact-item" target="_blank" rel="noopener noreferrer">
+                                    <Github size={20} />
+                                    <span>{content.contact.github}</span>
+                                </a>
+                            )}
+                            {content?.contact?.linkedin && (
+                                <a href={content.contact.linkedin} className="ml-contact-item" target="_blank" rel="noopener noreferrer">
+                                    <Linkedin size={20} />
+                                    <span>{content.contact.linkedin}</span>
+                                </a>
                             )}
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* Footer */}
-            <footer className="portfolio-footer">
+            {/* ── Footer ── */}
+            <footer className="ml-portfolio-footer">
                 <p>© {new Date().getFullYear()} {userProfile.full_name}. Crafted with passion.</p>
             </footer>
         </div>

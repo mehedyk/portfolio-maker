@@ -1,713 +1,695 @@
-/* ============================================================================
-   MEHEDY LIGHT - FIXED VERSION
-   NO YELLOW COLORS - Proper contrast - Clean professional design
-   CSS ISOLATION: All styles scoped to .mehedy-light-portfolio to prevent conflicts
-   ============================================================================ */
+/* ============================================================
+   MehedyLight.css — SCOPED LIGHT TEMPLATE STYLES
+   ALL variables prefixed  --ml-   |  ALL classes prefixed  .ml-
+   Outer wrapper: .mehedy-light-portfolio
+   Zero collision with index.css, themes.css, MehedyDark.css,
+   and any other global stylesheet.
+   ============================================================ */
 
 .mehedy-light-portfolio {
-    /* Scoped CSS variables to prevent conflicts with main app */
-    --primary: #2563eb;
-    --primary-dark: #1e40af;
-    --primary-light: #3b82f6;
-    --secondary: #64748b;
-    --text: #1e293b;
-    --text-light: #475569;
-    --text-lighter: #64748b;
-    --bg: #ffffff;
-    --bg-alt: #f8fafc;
-    --bg-card: #ffffff;
-    --border: #e2e8f0;
-    --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
-    --radius: 12px;
-    --transition: all 0.3s ease;
+    /* Local design tokens — isolated from :root */
+    --ml-primary: #2563eb;
+    --ml-primary-dark: #1e40af;
+    --ml-primary-dim: rgba(37, 99, 235, 0.1);
+    --ml-secondary: #7c3aed;
+    --ml-bg: #ffffff;
+    --ml-bg-alt: #f8fafc;
+    --ml-bg-card: #ffffff;
+    --ml-text: #1e293b;
+    --ml-text-muted: #64748b;
+    --ml-border: #e2e8f0;
+    --ml-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    --ml-shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+    --ml-radius: 12px;
+    --ml-radius-sm: 8px;
+    --ml-transition: all 0.25s ease;
 
-    /* Reset and base styles */
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
-    color: var(--text) !important;
-    background: var(--bg) !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background-color: var(--ml-bg);
+    color: var(--ml-text);
     line-height: 1.6;
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-
-    /* Override any global styles */
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
+    min-height: 100vh;
 }
 
-/* ============================================================================
-   NAVIGATION - FIXED: Clean, professional
-   ============================================================================ */
-
-.portfolio-nav {
+/* ── Navigation ── */
+.mehedy-light-portfolio .ml-nav {
     position: sticky;
     top: 0;
+    z-index: 100;
     background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--border);
-    z-index: 1000;
-    padding: 0.75rem 0;
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--ml-border);
+    padding: 0 1rem;
 }
 
-.nav-container {
+.mehedy-light-portfolio .ml-nav-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 2rem;
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
+    height: 64px;
 }
 
-.nav-brand {
-    font-size: 1.25rem;
+.mehedy-light-portfolio .ml-nav-brand {
     font-weight: 700;
-    color: var(--primary);
+    font-size: 1.25rem;
+    color: var(--ml-primary);
+    letter-spacing: -0.02em;
 }
 
-.nav-links {
+.mehedy-light-portfolio .ml-nav-links {
     display: flex;
     align-items: center;
     gap: 1.5rem;
 }
 
-.nav-links a {
-    color: var(--text);
+.mehedy-light-portfolio .ml-nav-links a {
+    color: var(--ml-text-muted);
     text-decoration: none;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     font-weight: 500;
-    transition: var(--transition);
+    transition: color 0.2s;
 }
 
-.nav-links a:hover {
-    color: var(--primary);
+.mehedy-light-portfolio .ml-nav-links a:hover {
+    color: var(--ml-primary);
 }
 
-.nav-cv-btn {
+.mehedy-light-portfolio .ml-nav-cv-btn {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    background: var(--primary);
-    color: white;
+    gap: 6px;
+    padding: 6px 14px;
+    background: var(--ml-primary);
+    color: #fff;
     border: none;
-    border-radius: 6px;
-    font-size: 0.9rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
-    transition: var(--transition);
+    transition: background 0.2s, transform 0.15s;
 }
 
-.nav-cv-btn:hover {
-    background: var(--primary-dark);
+.mehedy-light-portfolio .ml-nav-cv-btn:hover {
+    background: var(--ml-primary-dark);
     transform: translateY(-1px);
 }
 
-.theme-toggle {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: 1px solid var(--border);
-    background: var(--bg);
+.mehedy-light-portfolio .ml-theme-toggle {
+    background: none;
+    border: 1px solid var(--ml-border);
+    border-radius: 8px;
+    padding: 6px;
+    cursor: pointer;
+    color: var(--ml-text-muted);
     display: flex;
     align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: var(--transition);
+    transition: var(--ml-transition);
 }
 
-.theme-toggle:hover {
-    background: var(--bg-alt);
-    transform: scale(1.05);
+.mehedy-light-portfolio .ml-theme-toggle:hover {
+    background: var(--ml-bg-alt);
+    color: var(--ml-primary);
+    border-color: var(--ml-primary);
 }
 
-/* ============================================================================
-   HERO SECTION - FIXED: Hexagonal profile, proper spacing
-   ============================================================================ */
-
-.hero-section {
-    padding: 3rem 0 2rem;
-    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+/* ── Hero Section ── */
+.mehedy-light-portfolio .ml-hero-section {
+    min-height: 85vh;
+    display: flex;
+    align-items: center;
+    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 60%);
+    padding: 4rem 1rem;
+    position: relative;
+    overflow: hidden;
 }
 
-.hero-container {
+.mehedy-light-portfolio .ml-hero-section::before {
+    content: '';
+    position: absolute;
+    top: -100px;
+    right: -100px;
+    width: 500px;
+    height: 500px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(37, 99, 235, 0.06) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.mehedy-light-portfolio .ml-hero-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 2rem;
+    width: 100%;
+    position: relative;
+    z-index: 1;
 }
 
-.hero-content {
+.mehedy-light-portfolio .ml-hero-content {
     display: flex;
     align-items: center;
-    gap: 3rem;
+    gap: 4rem;
 }
 
-/* Hexagonal Profile Photo - LEFT SIDE */
-.hero-left {
+.mehedy-light-portfolio .ml-hero-left {
     flex-shrink: 0;
 }
 
-.hexagon-wrapper {
+/* Hexagon profile photo */
+.mehedy-light-portfolio .ml-hexagon-wrapper {
     position: relative;
-    width: 280px;
-    height: 280px;
+    width: 260px;
+    height: 260px;
 }
 
-.hexagon-profile {
-    position: relative;
-    width: 100%;
-    height: 100%;
+.mehedy-light-portfolio .ml-hexagon-wrapper::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
     clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-    background: linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%);
-    padding: 4px;
+    background: linear-gradient(135deg, var(--ml-primary), var(--ml-secondary));
+    z-index: -1;
 }
 
-.hexagon-profile img,
-.profile-placeholder {
+.mehedy-light-portfolio .ml-hexagon-profile {
+    width: 260px;
+    height: 260px;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    background: var(--ml-bg-alt);
+    overflow: hidden;
+}
+
+.mehedy-light-portfolio .ml-hexagon-profile img {
     width: 100%;
     height: 100%;
-    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
     object-fit: cover;
 }
 
-.profile-placeholder {
-    background: linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%);
+.mehedy-light-portfolio .ml-profile-placeholder {
+    width: 100%;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 5rem;
-    font-weight: 700;
-    color: white;
+    font-size: 4.5rem;
+    font-weight: 800;
+    color: #fff;
+    background: linear-gradient(135deg, var(--ml-primary), var(--ml-secondary));
 }
 
-/* Text Content - RIGHT SIDE */
-.hero-right {
+.mehedy-light-portfolio .ml-hero-right {
     flex: 1;
 }
 
-.hero-greeting {
-    font-size: 1.1rem;
-    color: var(--primary);
+.mehedy-light-portfolio .ml-hero-greeting {
+    font-size: 1rem;
+    color: var(--ml-primary);
     font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
     margin-bottom: 0.5rem;
 }
 
-.hero-name {
-    font-size: 3.5rem;
+.mehedy-light-portfolio .ml-hero-name {
+    font-size: 3rem;
     font-weight: 800;
-    color: var(--text);
     line-height: 1.1;
-    margin-bottom: 0.75rem;
-    background: linear-gradient(135deg, var(--text) 0%, var(--primary) 100%);
+    letter-spacing: -0.03em;
+    margin: 0 0 0.5rem 0;
+    background: linear-gradient(135deg, var(--ml-text) 0%, var(--ml-primary) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
 
-.hero-profession {
-    font-size: 1.8rem;
+.mehedy-light-portfolio .ml-hero-profession {
+    font-size: 1.25rem;
+    color: var(--ml-primary);
     font-weight: 700;
-    color: var(--primary);
-    margin-bottom: 1rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.hero-bio {
-    font-size: 1.1rem;
-    color: var(--text-light);
-    line-height: 1.7;
     margin-bottom: 1.5rem;
-    max-width: 600px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
-.hero-actions {
+.mehedy-light-portfolio .ml-hero-bio {
+    font-size: 1rem;
+    color: var(--ml-text-muted);
+    line-height: 1.8;
+    max-width: 560px;
+    margin-bottom: 2rem;
+}
+
+.mehedy-light-portfolio .ml-hero-actions {
     display: flex;
     gap: 1rem;
+    flex-wrap: wrap;
     margin-bottom: 1.5rem;
 }
 
-.btn-primary,
-.btn-secondary {
+.mehedy-light-portfolio .ml-btn-primary {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.875rem 1.75rem;
-    border-radius: 8px;
-    font-size: 1rem;
+    gap: 8px;
+    padding: 12px 24px;
+    background: var(--ml-primary);
+    color: #fff;
+    border: none;
+    border-radius: var(--ml-radius-sm);
+    font-size: 0.95rem;
     font-weight: 600;
     cursor: pointer;
-    transition: var(--transition);
-    border: none;
     text-decoration: none;
+    transition: var(--ml-transition);
 }
 
-.btn-primary {
-    background: var(--primary);
-    color: white;
-}
-
-.btn-primary:hover {
-    background: var(--primary-dark);
+.mehedy-light-portfolio .ml-btn-primary:hover {
+    background: var(--ml-primary-dark);
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
 }
 
-.btn-secondary {
+.mehedy-light-portfolio .ml-btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
     background: transparent;
-    color: var(--primary);
-    border: 2px solid var(--primary);
+    color: var(--ml-primary);
+    border: 2px solid var(--ml-primary);
+    border-radius: var(--ml-radius-sm);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--ml-transition);
 }
 
-.btn-secondary:hover {
-    background: var(--primary);
-    color: white;
+.mehedy-light-portfolio .ml-btn-secondary:hover {
+    background: var(--ml-primary);
+    color: #fff;
     transform: translateY(-2px);
 }
 
-.hero-socials {
+.mehedy-light-portfolio .ml-hero-socials {
     display: flex;
-    gap: 1rem;
+    gap: 12px;
 }
 
-.hero-socials a {
-    width: 44px;
-    height: 44px;
+.mehedy-light-portfolio .ml-hero-socials a {
+    width: 42px;
+    height: 42px;
     border-radius: 50%;
-    border: 2px solid var(--border);
+    border: 2px solid var(--ml-border);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--text);
-    transition: var(--transition);
+    color: var(--ml-text-muted);
+    transition: var(--ml-transition);
 }
 
-.hero-socials a:hover {
-    background: var(--primary);
-    color: white;
-    border-color: var(--primary);
+.mehedy-light-portfolio .ml-hero-socials a:hover {
+    background: var(--ml-primary);
+    color: #fff;
+    border-color: var(--ml-primary);
     transform: translateY(-3px);
 }
 
-/* ============================================================================
-   SECTIONS - COMPACT SPACING
-   ============================================================================ */
-
-.skills-section,
-.experience-section,
-.projects-section,
-.contact-section {
-    padding: 2.5rem 0;
-}
-
-.section-container {
+/* ── Shared Section Styles ── */
+.mehedy-light-portfolio .ml-section-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 2rem;
+    padding: 5rem 1rem;
 }
 
-.section-header {
+.mehedy-light-portfolio .ml-section-header {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 1.5rem;
+    gap: 12px;
+    margin-bottom: 3rem;
 }
 
-.section-header h2 {
+.mehedy-light-portfolio .ml-section-header h2 {
     font-size: 2rem;
     font-weight: 700;
-    color: var(--text);
+    color: var(--ml-text);
+    letter-spacing: -0.025em;
+    margin: 0;
 }
 
-.section-icon {
-    width: 32px;
-    height: 32px;
-    color: var(--primary);
+.mehedy-light-portfolio .ml-section-icon {
+    color: var(--ml-primary);
+    width: 28px;
+    height: 28px;
 }
 
-/* ============================================================================
-   SKILLS - COMPACT GRID
-   ============================================================================ */
+.mehedy-light-portfolio .ml-no-content {
+    color: var(--ml-text-muted);
+    font-style: italic;
+}
 
-.skills-grid {
+/* ── Skills ── */
+.mehedy-light-portfolio .ml-skills-section {
+    background: var(--ml-bg-alt);
+}
+
+.mehedy-light-portfolio .ml-skills-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 1rem;
 }
 
-.skill-card {
-    background: var(--bg-alt);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 1rem;
-    transition: var(--transition);
+.mehedy-light-portfolio .ml-skill-card {
+    background: var(--ml-bg-card);
+    border: 1px solid var(--ml-border);
+    border-radius: var(--ml-radius-sm);
+    padding: 1rem 1.25rem;
+    box-shadow: var(--ml-shadow);
+    transition: var(--ml-transition);
 }
 
-.skill-card:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-lg);
-    border-color: var(--primary);
+.mehedy-light-portfolio .ml-skill-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--ml-shadow-lg);
+    border-color: var(--ml-primary);
 }
 
-.skill-name {
-    font-size: 1rem;
+.mehedy-light-portfolio .ml-skill-name {
     font-weight: 600;
-    color: var(--text);
+    font-size: 0.9rem;
+    color: var(--ml-text);
     margin-bottom: 0.5rem;
 }
 
-.skill-level {
+.mehedy-light-portfolio .ml-skill-level {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 8px;
 }
 
-.skill-bar {
+.mehedy-light-portfolio .ml-skill-bar {
     flex: 1;
-    height: 8px;
-    background: var(--border);
-    border-radius: 10px;
+    height: 6px;
+    background: var(--ml-border);
+    border-radius: 99px;
     overflow: hidden;
 }
 
-.skill-progress {
+.mehedy-light-portfolio .ml-skill-progress {
     height: 100%;
-    background: linear-gradient(90deg, var(--primary) 0%, #7c3aed 100%);
-    border-radius: 10px;
-    transition: width 1s ease;
+    background: linear-gradient(90deg, var(--ml-primary), var(--ml-secondary));
+    border-radius: 99px;
+    transition: width 0.8s ease;
 }
 
-.skill-percent {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--primary);
-    min-width: 40px;
+.mehedy-light-portfolio .ml-skill-percent {
+    font-size: 0.75rem;
+    color: var(--ml-text-muted);
+    min-width: 32px;
+    text-align: right;
 }
 
-/* ============================================================================
-   EXPERIENCE - COMPACT TIMELINE
-   ============================================================================ */
-
-.timeline {
+/* ── Timeline (Experience + Education) ── */
+.mehedy-light-portfolio .ml-timeline {
     position: relative;
     padding-left: 2rem;
 }
 
-.timeline::before {
+.mehedy-light-portfolio .ml-timeline::before {
     content: '';
     position: absolute;
-    left: 0;
+    left: 8px;
     top: 0;
     bottom: 0;
     width: 2px;
-    background: var(--border);
+    background: linear-gradient(180deg, var(--ml-primary), transparent);
 }
 
-.timeline-item {
+.mehedy-light-portfolio .ml-timeline-item {
     position: relative;
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
 }
 
-.timeline-item:last-child {
-    margin-bottom: 0;
-}
-
-.timeline-marker {
+.mehedy-light-portfolio .ml-timeline-marker {
     position: absolute;
-    left: -2.5rem;
-    top: 0.3rem;
-    width: 12px;
-    height: 12px;
-    background: var(--primary);
+    left: -2rem;
+    top: 6px;
+    width: 14px;
+    height: 14px;
+    background: var(--ml-primary);
+    border: 3px solid var(--ml-bg);
     border-radius: 50%;
-    border: 3px solid var(--bg);
-    box-shadow: 0 0 0 3px var(--border);
+    box-shadow: 0 0 0 2px var(--ml-primary);
 }
 
-.timeline-content {
-    background: var(--bg-alt);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 1.25rem;
-    transition: var(--transition);
+.mehedy-light-portfolio .ml-timeline-content {
+    background: var(--ml-bg-card);
+    border: 1px solid var(--ml-border);
+    border-radius: var(--ml-radius);
+    padding: 1.25rem 1.5rem;
+    box-shadow: var(--ml-shadow);
+    transition: var(--ml-transition);
 }
 
-.timeline-content:hover {
-    transform: translateX(5px);
-    box-shadow: var(--shadow-lg);
-    border-color: var(--primary);
+.mehedy-light-portfolio .ml-timeline-content:hover {
+    border-color: rgba(37, 99, 235, 0.4);
+    transform: translateX(4px);
+    box-shadow: var(--ml-shadow-lg);
 }
 
-.timeline-header {
+.mehedy-light-portfolio .ml-experience-section {
+    background: var(--ml-bg);
+}
+
+.mehedy-light-portfolio .ml-education-section {
+    background: var(--ml-bg-alt);
+}
+
+.mehedy-light-portfolio .ml-timeline-header {
     display: flex;
-    justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 0.5rem;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.25rem;
 }
 
-.timeline-header h3 {
-    font-size: 1.2rem;
+.mehedy-light-portfolio .ml-timeline-header h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--ml-text);
+    margin: 0;
+}
+
+.mehedy-light-portfolio .ml-timeline-date {
+    font-size: 0.8rem;
+    color: var(--ml-primary);
     font-weight: 600;
-    color: var(--text);
+    white-space: nowrap;
+    background: var(--ml-primary-dim);
+    padding: 2px 10px;
+    border-radius: 99px;
 }
 
-.timeline-date {
+.mehedy-light-portfolio .ml-timeline-company {
     font-size: 0.9rem;
-    color: var(--primary);
-    font-weight: 500;
-}
-
-.timeline-company {
-    font-size: 1rem;
-    color: var(--text-light);
+    color: var(--ml-text-muted);
     font-weight: 500;
     margin-bottom: 0.5rem;
 }
 
-.timeline-desc {
-    font-size: 0.95rem;
-    color: var(--text-light);
-    line-height: 1.6;
+.mehedy-light-portfolio .ml-timeline-desc {
+    font-size: 0.9rem;
+    color: var(--ml-text-muted);
+    line-height: 1.7;
+    margin: 0;
 }
 
-/* ============================================================================
-   PROJECTS - COMPACT CARDS
-   ============================================================================ */
+/* ── Projects ── */
+.mehedy-light-portfolio .ml-projects-section {
+    background: var(--ml-bg);
+}
 
-.projects-grid {
+.mehedy-light-portfolio .ml-projects-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 1.5rem;
 }
 
-.project-card {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 12px;
+.mehedy-light-portfolio .ml-project-card {
+    background: var(--ml-bg-card);
+    border: 1px solid var(--ml-border);
+    border-radius: var(--ml-radius);
     overflow: hidden;
-    transition: var(--transition);
+    box-shadow: var(--ml-shadow);
+    transition: var(--ml-transition);
 }
 
-.project-card:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-lg);
-    border-color: var(--primary);
+.mehedy-light-portfolio .ml-project-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--ml-shadow-lg);
+    border-color: rgba(37, 99, 235, 0.4);
 }
 
-.project-image {
+.mehedy-light-portfolio .ml-project-image {
     width: 100%;
     height: 180px;
     overflow: hidden;
-    background: var(--bg-alt);
+    background: var(--ml-bg-alt);
 }
 
-.project-image img {
+.mehedy-light-portfolio .ml-project-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: var(--transition);
+    transition: transform 0.3s;
 }
 
-.project-card:hover .project-image img {
+.mehedy-light-portfolio .ml-project-card:hover .ml-project-image img {
     transform: scale(1.05);
 }
 
-.project-content {
+.mehedy-light-portfolio .ml-project-content {
     padding: 1.25rem;
 }
 
-.project-content h3 {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 0.5rem;
+.mehedy-light-portfolio .ml-project-content h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--ml-text);
+    margin: 0 0 0.5rem 0;
 }
 
-.project-content p {
-    font-size: 0.95rem;
-    color: var(--text-light);
+.mehedy-light-portfolio .ml-project-content p {
+    font-size: 0.9rem;
+    color: var(--ml-text-muted);
     line-height: 1.6;
-    margin-bottom: 0.75rem;
+    margin: 0 0 1rem 0;
 }
 
-.project-tags {
+.mehedy-light-portfolio .ml-project-tags {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-bottom: 0.75rem;
+    gap: 6px;
+    margin-bottom: 1rem;
 }
 
-.tag {
-    background: var(--bg-alt);
-    color: var(--primary);
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 500;
+.mehedy-light-portfolio .ml-tag {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--ml-primary);
+    background: var(--ml-primary-dim);
+    padding: 3px 10px;
+    border-radius: 99px;
+    border: 1px solid rgba(37, 99, 235, 0.2);
 }
 
-.project-links {
+.mehedy-light-portfolio .ml-project-links {
     display: flex;
-    gap: 1rem;
+    gap: 12px;
 }
 
-.project-links a {
+.mehedy-light-portfolio .ml-project-links a {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    color: var(--primary);
+    gap: 5px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--ml-primary);
     text-decoration: none;
-    font-size: 0.9rem;
-    font-weight: 500;
-    transition: var(--transition);
+    transition: opacity 0.2s;
 }
 
-.project-links a:hover {
-    gap: 0.6rem;
+.mehedy-light-portfolio .ml-project-links a:hover {
+    opacity: 0.75;
 }
 
-/* ============================================================================
-   CONTACT - COMPACT
-   ============================================================================ */
-
-.contact-section {
-    background: var(--bg-alt);
+/* ── Contact ── */
+.mehedy-light-portfolio .ml-contact-section {
+    background: var(--ml-bg-alt);
 }
 
-.contact-intro {
-    text-align: center;
+.mehedy-light-portfolio .ml-contact-content {
+    max-width: 600px;
+}
+
+.mehedy-light-portfolio .ml-contact-intro {
     font-size: 1.1rem;
-    color: var(--text-light);
-    margin-bottom: 1.5rem;
+    color: var(--ml-text-muted);
+    margin-bottom: 2rem;
 }
 
-.contact-info {
+.mehedy-light-portfolio .ml-contact-info {
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    max-width: 600px;
-    margin: 0 auto;
 }
 
-.contact-item {
+.mehedy-light-portfolio .ml-contact-item {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1rem;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    text-decoration: none;
-    transition: var(--transition);
-}
-
-.contact-item:hover {
-    border-color: var(--primary);
-    transform: translateX(5px);
-}
-
-.contact-item svg {
-    color: var(--primary);
-}
-
-/* ============================================================================
-   FOOTER
-   ============================================================================ */
-
-.portfolio-footer {
-    background: var(--text);
-    color: white;
-    text-align: center;
-    padding: 1.5rem;
-    font-size: 0.9rem;
-}
-
-/* ============================================================================
-   NO CONTENT PLACEHOLDER
-   ============================================================================ */
-
-.no-content {
-    text-align: center;
-    color: var(--text-light);
-    padding: 2rem;
+    gap: 12px;
     font-size: 1rem;
+    color: var(--ml-text);
+    text-decoration: none;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--ml-border);
+    border-radius: var(--ml-radius-sm);
+    background: var(--ml-bg);
+    transition: var(--ml-transition);
 }
 
-/* ============================================================================
-   RESPONSIVE DESIGN
-   ============================================================================ */
+.mehedy-light-portfolio .ml-contact-item:hover {
+    border-color: var(--ml-primary);
+    color: var(--ml-primary);
+    transform: translateX(4px);
+    box-shadow: var(--ml-shadow);
+}
 
-@media (max-width: 968px) {
-    .hero-content {
+.mehedy-light-portfolio .ml-contact-item svg {
+    color: var(--ml-primary);
+    flex-shrink: 0;
+}
+
+/* ── Footer ── */
+.mehedy-light-portfolio .ml-portfolio-footer {
+    background: var(--ml-text);
+    color: #fff;
+    text-align: center;
+    padding: 2rem 1rem;
+    font-size: 0.875rem;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+    .mehedy-light-portfolio .ml-hero-content {
         flex-direction: column;
         text-align: center;
+        gap: 2rem;
     }
 
-    .hero-left {
-        margin: 0 auto;
+    .mehedy-light-portfolio .ml-hero-name {
+        font-size: 2rem;
     }
 
-    .hexagon-wrapper {
-        width: 220px;
-        height: 220px;
-    }
-
-    .hero-name {
-        font-size: 2.5rem;
-    }
-
-    .hero-profession {
-        font-size: 1.4rem;
-    }
-
-    .hero-actions {
+    .mehedy-light-portfolio .ml-hero-actions {
         justify-content: center;
     }
 
-    .hero-socials {
+    .mehedy-light-portfolio .ml-hero-socials {
         justify-content: center;
     }
 
-    .hero-bio {
-        margin: 0 auto 1.5rem;
-    }
-}
-
-@media (max-width: 768px) {
-    .nav-links {
-        gap: 1rem;
-    }
-
-    .nav-links a {
-        font-size: 0.85rem;
-    }
-
-    .nav-cv-btn span {
+    .mehedy-light-portfolio .ml-nav-links a {
         display: none;
     }
 
-    .skills-grid,
-    .projects-grid {
+    .mehedy-light-portfolio .ml-nav-links a:last-of-type {
+        display: flex;
+    }
+
+    .mehedy-light-portfolio .ml-projects-grid {
         grid-template-columns: 1fr;
     }
 
-    .timeline-header {
+    .mehedy-light-portfolio .ml-timeline-header {
         flex-direction: column;
-        gap: 0.25rem;
-    }
-
-    .hero-actions {
-        flex-direction: column;
-        width: 100%;
-    }
-
-    .btn-primary,
-    .btn-secondary {
-        width: 100%;
-        justify-content: center;
     }
 }
