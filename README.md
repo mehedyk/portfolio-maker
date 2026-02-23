@@ -96,9 +96,7 @@ Quick deploy to Vercel:
 
 ## 👥 Team
 
-- **S.M. Mehedy Kawser** - Frontend Lead
-- **Ashiq** - Backend Lead
-- **Jubayer** - Full-Stack Developer
+- **S.M. Mehedy Kawser**
 
 **Academic Project**
 - Institution: Daffodil International University
@@ -111,4 +109,4 @@ All rights reserved. Will be licensed under MIT after project completion.
 
 ---
 
-**Built by Team Galacticos**
+**Built by Team mehedyk**
