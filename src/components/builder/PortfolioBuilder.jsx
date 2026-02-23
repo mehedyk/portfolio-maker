@@ -470,12 +470,7 @@ const PortfolioBuilder = () => {
         return 'profession-card' + (formData.profession_id === professionId ? ' selected' : '');
     };
 
-    const getThemeClassName = (themeId, isLocked) => {
-        let className = 'theme-card';
-        if (formData.theme_id === themeId) className += ' selected';
-        if (isLocked) className += ' locked';
-        return className;
-    };
+
 
     const getStepClassName = (stepNumber) => {
         let className = 'step-item';
