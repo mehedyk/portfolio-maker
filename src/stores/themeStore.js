@@ -1,7 +1,11 @@
 /**
  * ============================================================================
  * THEME STORE - Portfolio Builder
- * Professional theme management with 13 carefully crafted themes
+ * ============================================================================
+ * Tier system:
+ *   free     → Light + Dark (always available, both selectable simultaneously)
+ *   pro      → Profession-specific signature theme (costs 1 extra credit)
+ *   premium  → All other color themes (costs 1 credit, locked for free users)
  * ============================================================================
  */
 
@@ -11,266 +15,243 @@ import { persist } from 'zustand/middleware';
 export const useThemeStore = create(
   persist(
     (set) => ({
-      theme: 'professional-blue',
+      theme: 'light',
       isTransitioning: false,
       setTheme: (theme) => set({ theme }),
       setIsTransitioning: (value) => set({ isTransitioning: value }),
     }),
-    {
-      name: 'portfolio-builder-theme',
-    }
+    { name: 'portfolio-builder-theme' }
   )
 );
 
-export const themes = [
-  // FREE THEMES (Essential)
+// ─── FREE THEMES (always available) ──────────────────────────────────────────
+export const freeThemes = [
   {
     id: 'light',
     name: 'Light Mode',
-    class: 'theme-light',
     icon: '☀️',
     description: 'Clean, professional light theme',
-    category: 'basic',
     tier: 'free',
-    primary: '#ffffff',
-    secondary: '#f3f4f6',
-    colors: {
-      primary: '#ffffff',
-      secondary: '#f3f4f6'
-    }
+    colors: { primary: '#f8fafc', secondary: '#e2e8f0' },
   },
   {
     id: 'dark',
     name: 'Dark Mode',
-    class: 'theme-dark',
     icon: '🌙',
     description: 'Sleek, modern dark theme',
-    category: 'basic',
     tier: 'free',
-    primary: '#1f2937',
-    secondary: '#111827',
-    colors: {
-      primary: '#1f2937',
-      secondary: '#111827'
-    }
+    colors: { primary: '#1f2937', secondary: '#111827' },
   },
+];
 
-  // PREMIUM THEMES
+// ─── PROFESSION-SPECIFIC PRO THEMES (1 extra credit) ─────────────────────────
+// Each profession slug maps to a unique signature theme
+export const proThemesByProfession = {
+  // Technology
+  'software-engineer': {
+    id: 'pro-dev-terminal',
+    name: 'Dev Terminal',
+    icon: '💻',
+    description: 'Hacker-green on deep black — built for coders',
+    tier: 'pro',
+    colors: { primary: '#00ff41', secondary: '#003b00' },
+    gradient: 'linear-gradient(135deg, #0d0d0d 0%, #003b00 50%, #001a00 100%)',
+  },
+  'web-developer': {
+    id: 'pro-dev-terminal',
+    name: 'Dev Terminal',
+    icon: '💻',
+    description: 'Hacker-green on deep black — built for coders',
+    tier: 'pro',
+    colors: { primary: '#00ff41', secondary: '#003b00' },
+    gradient: 'linear-gradient(135deg, #0d0d0d 0%, #003b00 50%, #001a00 100%)',
+  },
+  'designer': {
+    id: 'pro-designer-canvas',
+    name: 'Designer Canvas',
+    icon: '🎨',
+    description: 'Warm cream & ink — a gallery for your work',
+    tier: 'pro',
+    colors: { primary: '#f5f0e8', secondary: '#c9a96e' },
+    gradient: 'linear-gradient(135deg, #f5f0e8 0%, #e8d5b7 50%, #c9a96e 100%)',
+  },
+  'ui-ux-designer': {
+    id: 'pro-designer-canvas',
+    name: 'Designer Canvas',
+    icon: '🎨',
+    description: 'Warm cream & ink — a gallery for your work',
+    tier: 'pro',
+    colors: { primary: '#f5f0e8', secondary: '#c9a96e' },
+    gradient: 'linear-gradient(135deg, #f5f0e8 0%, #e8d5b7 50%, #c9a96e 100%)',
+  },
+  'doctor': {
+    id: 'pro-medical-trust',
+    name: 'Medical Trust',
+    icon: '🏥',
+    description: 'Clinical white & healing blue — trusted by patients',
+    tier: 'pro',
+    colors: { primary: '#0077b6', secondary: '#00b4d8' },
+    gradient: 'linear-gradient(135deg, #f0f9ff 0%, #0077b6 60%, #023e8a 100%)',
+  },
+  'teacher': {
+    id: 'pro-educator-warm',
+    name: 'Educator Warm',
+    icon: '📚',
+    description: 'Warm amber & chalkboard green — inspiring and approachable',
+    tier: 'pro',
+    colors: { primary: '#2d6a4f', secondary: '#f4a261' },
+    gradient: 'linear-gradient(135deg, #fefae0 0%, #f4a261 40%, #2d6a4f 100%)',
+  },
+  'photographer': {
+    id: 'pro-photo-dark-room',
+    name: 'Dark Room',
+    icon: '📷',
+    description: 'Deep black & silver — your work takes centre stage',
+    tier: 'pro',
+    colors: { primary: '#c9d6df', secondary: '#52616b' },
+    gradient: 'linear-gradient(135deg, #0f0f0f 0%, #1c1c1c 50%, #52616b 100%)',
+  },
+  'lawyer': {
+    id: 'pro-legal-prestige',
+    name: 'Legal Prestige',
+    icon: '⚖️',
+    description: 'Deep navy & gold — authority and trust',
+    tier: 'pro',
+    colors: { primary: '#1a1a2e', secondary: '#c9a84c' },
+    gradient: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #c9a84c 100%)',
+  },
+  'accountant': {
+    id: 'pro-finance-slate',
+    name: 'Finance Slate',
+    icon: '📊',
+    description: 'Steel blue & white — precise and professional',
+    tier: 'pro',
+    colors: { primary: '#334155', secondary: '#64748b' },
+    gradient: 'linear-gradient(135deg, #f1f5f9 0%, #334155 60%, #1e293b 100%)',
+  },
+  // Default fallback for any profession not explicitly listed
+  'default': {
+    id: 'pro-signature',
+    name: 'Signature',
+    icon: '⚡',
+    description: 'A premium theme exclusive to your profession',
+    tier: 'pro',
+    colors: { primary: '#7c3aed', secondary: '#a78bfa' },
+    gradient: 'linear-gradient(135deg, #1e1b4b 0%, #7c3aed 50%, #a78bfa 100%)',
+  },
+};
+
+// ─── PREMIUM COLOR THEMES (need credits) ─────────────────────────────────────
+export const premiumThemes = [
   {
     id: 'professional-blue',
     name: 'Professional Blue',
-    class: 'theme-professional-blue',
     icon: '💼',
-    description: 'Clean, corporate blue palette',
-    category: 'light',
     tier: 'premium',
-    primary: '#2563eb',
-    secondary: '#3b82f6',
-    colors: {
-      primary: '#2563eb',
-      secondary: '#3b82f6'
-    }
+    colors: { primary: '#2563eb', secondary: '#3b82f6' },
   },
   {
     id: 'minimal-gray',
     name: 'Minimal Gray',
-    class: 'theme-minimal-gray',
     icon: '⚪',
-    description: 'Elegant grayscale design',
-    category: 'light',
     tier: 'premium',
-    primary: '#4b5563',
-    secondary: '#6b7280',
-    colors: {
-      primary: '#4b5563',
-      secondary: '#6b7280'
-    }
+    colors: { primary: '#4b5563', secondary: '#6b7280' },
   },
   {
     id: 'fresh-green',
     name: 'Fresh Green',
-    class: 'theme-fresh-green',
     icon: '🌿',
-    description: 'Natural, eco-friendly green',
-    category: 'light',
     tier: 'premium',
-    primary: '#059669',
-    secondary: '#10b981',
-    colors: {
-      primary: '#059669',
-      secondary: '#10b981'
-    }
+    colors: { primary: '#059669', secondary: '#10b981' },
   },
-
-  // DARK THEMES (Modern & Sleek)
   {
     id: 'dark-elegance',
     name: 'Dark Elegance',
-    class: 'theme-dark-elegance',
     icon: '✨',
-    description: 'Sophisticated dark theme',
-    category: 'dark',
     tier: 'premium',
-    primary: '#6366f1',
-    secondary: '#818cf8',
-    colors: {
-      primary: '#6366f1',
-      secondary: '#818cf8'
-    }
+    colors: { primary: '#6366f1', secondary: '#818cf8' },
   },
   {
     id: 'midnight-slate',
     name: 'Midnight Slate',
-    class: 'theme-midnight-slate',
     icon: '🌌',
-    description: 'Deep slate with blue accents',
-    category: 'dark',
     tier: 'premium',
-    primary: '#0ea5e9',
-    secondary: '#38bdf8',
-    colors: {
-      primary: '#0ea5e9',
-      secondary: '#38bdf8'
-    }
+    colors: { primary: '#0ea5e9', secondary: '#38bdf8' },
   },
   {
     id: 'carbon-gold',
     name: 'Carbon Gold',
-    class: 'theme-carbon-gold',
     icon: '⭐',
-    description: 'Premium gold on dark',
-    category: 'dark',
     tier: 'premium',
-    primary: '#f59e0b',
-    secondary: '#fbbf24',
-    colors: {
-      primary: '#f59e0b',
-      secondary: '#fbbf24'
-    }
+    colors: { primary: '#f59e0b', secondary: '#fbbf24' },
   },
-
-  // COLORFUL THEMES (Vibrant & Creative)
   {
     id: 'ocean-breeze',
     name: 'Ocean Breeze',
-    class: 'theme-ocean-breeze',
     icon: '🌊',
-    description: 'Refreshing ocean blues',
-    category: 'colorful',
     tier: 'premium',
-    primary: '#06b6d4',
-    secondary: '#22d3ee',
-    colors: {
-      primary: '#06b6d4',
-      secondary: '#22d3ee'
-    }
+    colors: { primary: '#06b6d4', secondary: '#22d3ee' },
   },
   {
     id: 'sunset-glow',
     name: 'Sunset Glow',
-    class: 'theme-sunset-glow',
     icon: '🌅',
-    description: 'Warm sunset oranges',
-    category: 'colorful',
     tier: 'premium',
-    primary: '#f97316',
-    secondary: '#fb923c',
-    colors: {
-      primary: '#f97316',
-      secondary: '#fb923c'
-    }
+    colors: { primary: '#f97316', secondary: '#fb923c' },
   },
   {
     id: 'purple-reign',
     name: 'Purple Reign',
-    class: 'theme-purple-reign',
     icon: '💜',
-    description: 'Royal purple tones',
-    category: 'colorful',
     tier: 'premium',
-    primary: '#a855f7',
-    secondary: '#c084fc',
-    colors: {
-      primary: '#a855f7',
-      secondary: '#c084fc'
-    }
+    colors: { primary: '#a855f7', secondary: '#c084fc' },
   },
   {
     id: 'rose-pink',
     name: 'Rose Pink',
-    class: 'theme-rose-pink',
     icon: '🌸',
-    description: 'Elegant rose pink',
-    category: 'colorful',
     tier: 'premium',
-    primary: '#ec4899',
-    secondary: '#f472b6',
-    colors: {
-      primary: '#ec4899',
-      secondary: '#f472b6'
-    }
+    colors: { primary: '#ec4899', secondary: '#f472b6' },
   },
   {
     id: 'crimson-red',
     name: 'Crimson Red',
-    class: 'theme-crimson-red',
     icon: '🔴',
-    description: 'Bold crimson energy',
-    category: 'colorful',
     tier: 'premium',
-    primary: '#dc2626',
-    secondary: '#ef4444',
-    colors: {
-      primary: '#dc2626',
-      secondary: '#ef4444'
-    }
+    colors: { primary: '#dc2626', secondary: '#ef4444' },
   },
   {
     id: 'lime-fresh',
     name: 'Lime Fresh',
-    class: 'theme-lime-fresh',
     icon: '🍋',
-    description: 'Energetic lime green',
-    category: 'colorful',
     tier: 'premium',
-    primary: '#84cc16',
-    secondary: '#a3e635',
-    colors: {
-      primary: '#84cc16',
-      secondary: '#a3e635'
-    }
+    colors: { primary: '#84cc16', secondary: '#a3e635' },
   },
   {
     id: 'teal-mint',
     name: 'Teal Mint',
-    class: 'theme-teal-mint',
-    icon: '🌿',
-    description: 'Cool teal and mint',
-    category: 'colorful',
+    icon: '🫧',
     tier: 'premium',
-    primary: '#14b8a6',
-    secondary: '#2dd4bf',
-    colors: {
-      primary: '#14b8a6',
-      secondary: '#2dd4bf'
-    }
+    colors: { primary: '#14b8a6', secondary: '#2dd4bf' },
   },
 ];
 
-// Helper function to apply theme
-export const applyTheme = (themeId) => {
-  const theme = themes.find(t => t.id === themeId);
+// Flat list for backward compat (used in PortfolioBuilder theme_id mapping etc.)
+export const themes = [...freeThemes, ...premiumThemes];
 
-  // Remove all theme classes
-  themes.forEach(t => {
-    if (t.class) {
-      document.documentElement.classList.remove(t.class);
-    }
-  });
+// ─── Helper: get the pro theme for a given profession slug ────────────────────
+export const getProThemeForProfession = (professionSlug) => {
+  return proThemesByProfession[professionSlug] || proThemesByProfession['default'];
+};
 
-  // Add current theme class
-  if (theme?.class) {
-    document.documentElement.classList.add(theme.class);
-    document.documentElement.setAttribute('data-theme', themeId);
-  }
+// ─── Theme ID → DB numeric ID mapper (unchanged) ─────────────────────────────
+export const themeIdMap = {
+  'light': 1, 'dark': 2, 'professional-blue': 3, 'minimal-gray': 4,
+  'fresh-green': 5, 'dark-elegance': 6, 'midnight-slate': 7, 'carbon-gold': 8,
+  'ocean-breeze': 9, 'sunset-glow': 10, 'purple-reign': 11, 'rose-pink': 12,
+  'crimson-red': 13, 'lime-fresh': 14, 'teal-mint': 15,
+  // Pro themes map to high IDs (add these to your DB themes table too)
+  'pro-dev-terminal': 101, 'pro-designer-canvas': 102, 'pro-medical-trust': 103,
+  'pro-educator-warm': 104, 'pro-photo-dark-room': 105, 'pro-legal-prestige': 106,
+  'pro-finance-slate': 107, 'pro-signature': 108,
 };

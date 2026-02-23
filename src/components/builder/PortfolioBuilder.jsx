@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../services/supabase';
 import { uploadToCloudinary, uploadRawToCloudinary } from '../../services/cloudinary';
-import { themes as localThemes } from '../../stores/themeStore';
+import { freeThemes, premiumThemes, getProThemeForProfession, themeIdMap } from '../../stores/themeStore';
 import { Upload, FileText, Eye, X } from 'lucide-react';
 import './PortfolioBuilder.css';
 
@@ -11,31 +11,8 @@ import './PortfolioBuilder.css';
 // THEME ID MAPPER - Converts string theme IDs to database numeric IDs
 // ============================================================================
 const mapThemeIdToDatabase = (stringThemeId) => {
-    const themeMapping = {
-        'light': 1,
-        'dark': 2,
-        'professional-blue': 3,
-        'minimal-gray': 4,
-        'fresh-green': 5,
-        'dark-elegance': 6,
-        'midnight-slate': 7,
-        'carbon-gold': 8,
-        'ocean-breeze': 9,
-        'sunset-glow': 10,
-        'purple-reign': 11,
-        'rose-pink': 12,
-        'crimson-red': 13,
-        'lime-fresh': 14,
-        'teal-mint': 15
-    };
-
-    // If it's already a number, return it
-    if (typeof stringThemeId === 'number') {
-        return stringThemeId;
-    }
-
-    // If it's a string, map it to the database ID
-    return themeMapping[stringThemeId] || 1; // Default to 1 if not found
+    if (typeof stringThemeId === 'number') return stringThemeId;
+    return themeIdMap[stringThemeId] || 1;
 };
 
 const PortfolioBuilder = () => {
@@ -46,7 +23,6 @@ const PortfolioBuilder = () => {
     const [loading, setLoading] = useState(false);
     const [showPublishConfirm, setShowPublishConfirm] = useState(false);
     const [professions, setProfessions] = useState([]);
-    const [themes] = useState(localThemes); // Initialize with local themes
     const [showCreditModal, setShowCreditModal] = useState(false);
     const [currentSkill, setCurrentSkill] = useState('');
     const [currentProject, setCurrentProject] = useState({
@@ -715,49 +691,147 @@ const PortfolioBuilder = () => {
                 )}
 
                 {/* STEP 2: Theme Selection */}
-                {step === 2 && (
-                    <div className="step-content">
-                        <h2>Pick Your Style</h2>
-                        <p className="step-description">
-                            Choose a theme that represents your personality and profession.
-                        </p>
-                        <div className="theme-grid">
-                            {themes.map((theme) => {
-                                const isLocked = theme.tier === 'premium' && profile?.credits < 1;
-                                const gradientStyle = {
-                                    background: `linear-gradient(135deg, ${theme.colors.primary}, ${theme.colors.secondary})`
-                                };
-                                return (
-                                    <div
-                                        key={theme.id}
-                                        className={getThemeClassName(theme.id, isLocked)}
-                                        onClick={() => {
-                                            if (isLocked) {
-                                                setBuilderToast({ msg: 'Premium themes require credits. Please purchase credits first.', isError: true }); setTimeout(() => setBuilderToast(null), 3500);
-                                                return;
-                                            }
-                                            setFormData({ ...formData, theme_id: mapThemeIdToDatabase(theme.id) });
-                                            setStep(3);
-                                        }}
-                                    >
-                                        <div className="theme-preview" style={gradientStyle}></div>
-                                        <div className="theme-info">
-                                            <h3>{theme.name}</h3>
-                                            <span className={`theme-badge ${theme.tier}`}>
-                                                {theme.tier === 'premium' ? '⭐ Premium' : '✓ Free'}
-                                            </span>
-                                        </div>
-                                    </div>
-                                );
-                            })}
+                {step === 2 && (() => {
+                    // Get selected profession's slug for pro theme
+                    const selectedProf = professions.find(p => p.id === formData.profession_id);
+                    const profSlug = selectedProf?.slug || 'default';
+                    const proTheme = getProThemeForProfession(profSlug);
+                    const hasCredits = (profile?.credits ?? 0) >= 1;
+
+                    // Selected theme id (string)
+                    const selectedThemeId = Object.keys(themeIdMap).find(
+                        k => themeIdMap[k] === formData.theme_id
+                    ) || 'light';
+
+                    const selectTheme = (themeId) => {
+                        setFormData({ ...formData, theme_id: mapThemeIdToDatabase(themeId) });
+                    };
+
+                    const ThemeCard = ({ theme, locked, isSelected, badge }) => {
+                        const bg = theme.gradient ||
+                            `linear-gradient(135deg, ${theme.colors.primary}, ${theme.colors.secondary})`;
+                        return (
+                            <div
+                                onClick={() => {
+                                    if (locked) {
+                                        setBuilderToast({ msg: 'This theme requires credits. Purchase credits to unlock.', isError: true });
+                                        setTimeout(() => setBuilderToast(null), 3500);
+                                        return;
+                                    }
+                                    selectTheme(theme.id);
+                                }}
+                                style={{
+                                    borderRadius: '14px',
+                                    overflow: 'hidden',
+                                    border: isSelected ? '3px solid #6366f1' : '3px solid transparent',
+                                    boxShadow: isSelected ? '0 0 0 3px rgba(99,102,241,0.3)' : '0 2px 8px rgba(0,0,0,0.1)',
+                                    cursor: locked ? 'not-allowed' : 'pointer',
+                                    opacity: locked ? 0.6 : 1,
+                                    transition: 'all 0.2s',
+                                    position: 'relative',
+                                    background: 'white',
+                                }}
+                            >
+                                <div style={{ height: '90px', background: bg }} />
+                                <div style={{ padding: '10px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <span style={{ fontWeight: '600', fontSize: '14px' }}>
+                                        {theme.icon} {theme.name}
+                                    </span>
+                                    <span style={{
+                                        fontSize: '11px', fontWeight: '700', padding: '2px 8px',
+                                        borderRadius: '20px',
+                                        background: badge === 'free' ? '#dcfce7' : badge === 'pro' ? '#fef3c7' : '#f3e8ff',
+                                        color: badge === 'free' ? '#16a34a' : badge === 'pro' ? '#d97706' : '#7c3aed',
+                                    }}>
+                                        {badge === 'free' ? '✓ Free' : badge === 'pro' ? '⚡ Pro Theme' : '⭐ Premium'}
+                                    </span>
+                                </div>
+                                {isSelected && (
+                                    <div style={{
+                                        position: 'absolute', top: '8px', right: '8px',
+                                        background: '#6366f1', color: 'white', borderRadius: '50%',
+                                        width: '24px', height: '24px', display: 'flex',
+                                        alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: '800'
+                                    }}>✓</div>
+                                )}
+                                {locked && (
+                                    <div style={{
+                                        position: 'absolute', top: '8px', left: '8px',
+                                        background: 'rgba(0,0,0,0.5)', color: 'white', borderRadius: '20px',
+                                        padding: '2px 10px', fontSize: '11px', fontWeight: '600'
+                                    }}>🔒 Locked</div>
+                                )}
+                            </div>
+                        );
+                    };
+
+                    return (
+                        <div className="step-content">
+                            <h2>Pick Your Style</h2>
+                            <p className="step-description">
+                                Choose the look for your portfolio. Light &amp; Dark are always free — both available to you!
+                            </p>
+
+                            {/* FREE SECTION */}
+                            <div style={{ marginBottom: '32px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
+                                    <span style={{ fontWeight: '700', fontSize: '16px' }}>☀️🌙 Free Themes</span>
+                                    <span style={{ fontSize: '13px', color: '#16a34a', fontWeight: '600', background: '#dcfce7', padding: '2px 10px', borderRadius: '20px' }}>Both always included</span>
+                                </div>
+                                <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '12px' }}>
+                                    You can switch between Light and Dark anytime — no credits needed.
+                                </p>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                                    {freeThemes.map(t => (
+                                        <ThemeCard key={t.id} theme={t} locked={false} isSelected={selectedThemeId === t.id} badge="free" />
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* PRO SECTION */}
+                            <div style={{ marginBottom: '32px', background: 'linear-gradient(135deg, #fffbeb, #fef3c7)', borderRadius: '16px', padding: '20px', border: '1px solid #fde68a' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                                    <span style={{ fontWeight: '700', fontSize: '16px' }}>⚡ Your Profession Theme</span>
+                                    <span style={{ fontSize: '11px', color: '#d97706', fontWeight: '700', background: '#fef3c7', padding: '2px 10px', borderRadius: '20px', border: '1px solid #fde68a' }}>+1 Credit</span>
+                                </div>
+                                <p style={{ fontSize: '13px', color: '#78350f', marginBottom: '16px', lineHeight: '1.5' }}>
+                                    <strong>"{proTheme.name}"</strong> — {proTheme.description}. Designed exclusively for your profession.
+                                </p>
+                                <ThemeCard
+                                    theme={proTheme}
+                                    locked={!hasCredits}
+                                    isSelected={selectedThemeId === proTheme.id}
+                                    badge="pro"
+                                />
+                                {!hasCredits && (
+                                    <p style={{ fontSize: '12px', color: '#92400e', marginTop: '10px', textAlign: 'center' }}>
+                                        You need 1 credit to unlock this theme. <a href="/credits" style={{ color: '#d97706', fontWeight: '700' }}>Buy credits →</a>
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* PREMIUM SECTION */}
+                            <div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
+                                    <span style={{ fontWeight: '700', fontSize: '16px' }}>⭐ Premium Color Themes</span>
+                                    <span style={{ fontSize: '11px', color: '#7c3aed', fontWeight: '700', background: '#f3e8ff', padding: '2px 10px', borderRadius: '20px' }}>Requires credits</span>
+                                </div>
+                                <div className="theme-grid">
+                                    {premiumThemes.map(t => (
+                                        <ThemeCard key={t.id} theme={t} locked={!hasCredits} isSelected={selectedThemeId === t.id} badge="premium" />
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="step-navigation" style={{ marginTop: '32px' }}>
+                                <button onClick={() => setStep(1)} className="btn btn-secondary">← Back</button>
+                                <button onClick={() => setStep(3)} className="btn btn-primary">
+                                    Continue with {freeThemes.find(t => t.id === selectedThemeId)?.name || premiumThemes.find(t => t.id === selectedThemeId)?.name || proTheme.name} →
+                                </button>
+                            </div>
                         </div>
-                        <div className="step-navigation">
-                            <button onClick={() => setStep(1)} className="btn btn-secondary">
-                                ← Back
-                            </button>
-                        </div>
-                    </div>
-                )}
+                    );
+                })()}
 
                 {/* STEP 3: Content */}
                 {step === 3 && (
