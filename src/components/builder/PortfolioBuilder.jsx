@@ -15,6 +15,61 @@ const mapThemeIdToDatabase = (stringThemeId) => {
     return themeIdMap[stringThemeId] || 1;
 };
 
+// ============================================================================
+// [CHANGE 1/3] Theme-matched toast style
+// Replaces the old hardcoded background: '#ef4444' / '#22c55e' in the toast div.
+// Now picks an accent color from the currently selected theme so the notification
+// visually matches whichever theme the user has chosen.
+// ============================================================================
+const getThemeToastStyle = (themeId, isError) => {
+    const clientThemeKey = Object.keys(themeIdMap).find(k => themeIdMap[k] === themeId) || 'light';
+
+    const themeAccents = {
+        'light':               '#3b82f6',
+        'dark':                '#6366f1',
+        'professional-blue':   '#2563eb',
+        'minimal-gray':        '#4b5563',
+        'fresh-green':         '#059669',
+        'dark-elegance':       '#6366f1',
+        'midnight-slate':      '#0ea5e9',
+        'carbon-gold':         '#d97706',
+        'ocean-breeze':        '#06b6d4',
+        'sunset-glow':         '#f97316',
+        'purple-reign':        '#a855f7',
+        'rose-pink':           '#ec4899',
+        'crimson-red':         '#dc2626',
+        'lime-fresh':          '#84cc16',
+        'teal-mint':           '#14b8a6',
+        'pro-dev-terminal':    '#00c853',
+        'pro-designer-canvas': '#c9a96e',
+        'pro-medical-trust':   '#0077b6',
+        'pro-educator-warm':   '#f4a261',
+        'pro-photo-dark-room': '#c9d6df',
+        'pro-legal-prestige':  '#c9a84c',
+        'pro-finance-slate':   '#334155',
+        'pro-signature':       '#7c3aed',
+    };
+
+    const accent = themeAccents[clientThemeKey] || '#3b82f6';
+
+    return {
+        position: 'fixed',
+        top: '20px',
+        right: '20px',
+        zIndex: 9999,
+        background: isError ? '#fef2f2' : `${accent}15`,
+        color: isError ? '#b91c1c' : '#0f172a',
+        padding: '14px 20px',
+        borderRadius: '12px',
+        boxShadow: isError ? '0 4px 20px rgba(239,68,68,0.2)' : `0 4px 20px ${accent}30`,
+        fontWeight: '600',
+        maxWidth: '340px',
+        border: isError ? '1.5px solid #fecaca' : `1.5px solid ${accent}40`,
+        borderLeft: isError ? '4px solid #ef4444' : `4px solid ${accent}`,
+        fontSize: '14px',
+    };
+};
+
 const PortfolioBuilder = () => {
     const { user, profile, refreshProfile } = useAuth();
     const navigate = useNavigate();
@@ -419,6 +474,11 @@ const PortfolioBuilder = () => {
                 user_id: user.id,
                 profession_id: formData.profession_id,
                 theme_id: mapThemeIdToDatabase(formData.theme_id),
+                // [CHANGE 2/3] persist the string theme key alongside the DB integer
+                // so the UI can restore the correct visual on next load
+                client_theme_id: Object.keys(themeIdMap).find(
+                    k => themeIdMap[k] === mapThemeIdToDatabase(formData.theme_id)
+                ) || 'light',
                 username: formData.username,
                 cv_url: cvUrl || null, // Include CV URL
                 specialty_info: formData.specialty_info,
@@ -470,8 +530,6 @@ const PortfolioBuilder = () => {
         return 'profession-card' + (formData.profession_id === professionId ? ' selected' : '');
     };
 
-
-
     const getStepClassName = (stepNumber) => {
         let className = 'step-item';
         if (step >= stepNumber) className += ' active';
@@ -504,15 +562,11 @@ const PortfolioBuilder = () => {
 
     return (
         <div className="portfolio-builder">
+            {/* [CHANGE 3/3] toast now uses getThemeToastStyle() instead of the old
+                hardcoded background: '#ef4444' / '#22c55e'. Everything else identical. */}
             {builderToast && (
-                <div style={{
-                    position: 'fixed', top: '20px', right: '20px', zIndex: 9999,
-                    background: builderToast.isError ? '#ef4444' : '#22c55e',
-                    color: 'white', padding: '14px 20px', borderRadius: '10px',
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.2)', fontWeight: '600',
-                    maxWidth: '340px'
-                }}>
-                    {builderToast.msg}
+                <div style={getThemeToastStyle(formData.theme_id, builderToast.isError)}>
+                    {builderToast.isError ? '✕ ' : '✓ '}{builderToast.msg}
                 </div>
             )}
             <div className="builder-header">
@@ -1398,6 +1452,10 @@ const PortfolioBuilder = () => {
                                             user_id: user.id,
                                             profession_id: formData.profession_id,
                                             theme_id: mapThemeIdToDatabase(formData.theme_id),
+                                            // [CHANGE 2/3 — also in publish flow]
+                                            client_theme_id: Object.keys(themeIdMap).find(
+                                                k => themeIdMap[k] === mapThemeIdToDatabase(formData.theme_id)
+                                            ) || 'light',
                                             username: formData.username,
                                             cv_url: cvUrl || null,
                                             specialty_info: formData.specialty_info,
