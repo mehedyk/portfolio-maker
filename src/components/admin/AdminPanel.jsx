@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../services/supabase';
 import './AdminPanel.css';
@@ -245,7 +245,13 @@ const AdminPanel = () => {
                 <div className="container">
                     <div className="nav-content">
                         <div className="nav-brand">
-                            <div className="nav-brand-icon">👑</div>
+                            <Link to="/dashboard" className="admin-nav-logo">
+                                <img
+                                    src="https://i.postimg.cc/sgr07cSv/logo_small.png"
+                                    alt="Portfolio Builder"
+                                    className="admin-nav-logo-img"
+                                />
+                            </Link>
                             <h2>Admin Panel</h2>
                         </div>
                         <div className="nav-actions">

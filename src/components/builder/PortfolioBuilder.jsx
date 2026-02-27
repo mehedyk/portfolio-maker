@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../services/supabase';
 import { uploadToCloudinary, uploadRawToCloudinary } from '../../services/cloudinary';
@@ -572,8 +572,14 @@ const PortfolioBuilder = () => {
             <div className="builder-header">
                 <div className="container">
                     <div className="builder-title">
-                        <div className="builder-title-icon">✨</div>
-                        <span>Portfolio Builder</span>
+                        <Link to="/dashboard" className="builder-nav-logo">
+                            <img
+                                src="https://i.postimg.cc/sgr07cSv/logo_small.png"
+                                alt="Portfolio Builder"
+                                className="builder-nav-logo-img"
+                            />
+                            <span>Portfolio Builder</span>
+                        </Link>
                     </div>
                     <div className="header-actions">
                         <div className="credits-display">

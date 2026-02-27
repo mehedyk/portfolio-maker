@@ -38,10 +38,13 @@ const Login = () => {
     return (
         <div className="auth-container">
             <div className="auth-card">
-                <div className="auth-logo">
-                    <div className="auth-logo-icon">💼</div>
-                    <span className="auth-logo-text">Portfolio Builder</span>
-                </div>
+                <Link to="/" className="auth-logo">
+                    <img
+                        src="https://i.postimg.cc/5tP7cWry/Logo-main.png"
+                        alt="Portfolio Builder"
+                        className="auth-logo-img"
+                    />
+                </Link>
 
                 <h1 className="auth-title">Welcome Back!</h1>
                 <p className="auth-subtitle">Sign in to manage your portfolio</p>

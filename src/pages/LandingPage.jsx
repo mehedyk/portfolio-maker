@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import {
-    Briefcase,
     ArrowRight,
     Code2,
     Palette,
@@ -17,8 +17,14 @@ import {
 } from 'lucide-react';
 import './LandingPage.css';
 
+const LOGO_MAIN = 'https://i.postimg.cc/5tP7cWry/Logo-main.png';
+const LOGO_SMALL = 'https://i.postimg.cc/sgr07cSv/logo_small.png';
+
 const LandingPage = () => {
+    const { user } = useAuth();
     const [scrolled, setScrolled] = useState(false);
+
+    const homeLink = user ? '/dashboard' : '/';
 
     useEffect(() => {
         const handleScroll = () => {
@@ -33,11 +39,12 @@ const LandingPage = () => {
             {/* Navigation */}
             <nav className={`landing-nav ${scrolled ? 'scrolled' : ''}`}>
                 <div className="nav-container">
-                    <Link to="/" className="nav-logo">
-                        <div className="nav-logo-icon">
-                            <Briefcase size={22} />
-                        </div>
-                        <span>Portfolio Builder</span>
+                    <Link to={homeLink} className="nav-logo">
+                        <img
+                            src={LOGO_MAIN}
+                            alt="Portfolio Builder"
+                            className="nav-logo-img"
+                        />
                     </Link>
                     <div className="nav-actions">
                         <Link to="/login" className="btn btn-secondary btn-small">
@@ -374,12 +381,14 @@ const LandingPage = () => {
             <footer className="footer">
                 <div className="footer-content">
                     <div className="footer-section">
-                        <div className="footer-brand">
-                            <div className="footer-brand-icon">
-                                <Briefcase size={22} />
-                            </div>
+                        <Link to={homeLink} className="footer-brand">
+                            <img
+                                src={LOGO_SMALL}
+                                alt="Portfolio Builder"
+                                className="footer-logo-img"
+                            />
                             <span>Portfolio Builder</span>
-                        </div>
+                        </Link>
                         <p style={{ color: 'var(--gray-500)', marginTop: '16px' }}>
                             Empowering professionals to create stunning portfolios without coding.
                         </p>

@@ -49,15 +49,24 @@
   color: var(--gray-900);
 }
 
-.nav-logo-icon {
-  width: 40px;
+.nav-logo-img {
   height: 40px;
-  background: var(--gradient-primary);
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
+  width: auto;
+  display: block;
+  object-fit: contain;
+  transition: opacity 0.2s ease;
+}
+
+.nav-logo-img:hover {
+  opacity: 0.85;
+}
+
+.footer-logo-img {
+  height: 32px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
 }
 
 .nav-actions {
@@ -628,17 +637,12 @@
   font-family: 'Space Grotesk', sans-serif;
   font-weight: 700;
   font-size: 24px;
+  text-decoration: none;
+  color: white;
 }
 
-.footer-brand-icon {
-  width: 40px;
-  height: 40px;
-  background: var(--gradient-primary);
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
+.footer-brand:hover {
+  opacity: 0.85;
 }
 
 .footer-section h4 {

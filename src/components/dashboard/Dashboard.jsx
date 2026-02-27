@@ -113,7 +113,13 @@ const Dashboard = () => {
             <nav className="dashboard-nav">
                 <div className="container">
                     <div className="nav-content">
-                        <h2>Portfolio Builder</h2>
+                        <Link to="/dashboard" className="dashboard-nav-logo">
+                            <img
+                                src="https://i.postimg.cc/5tP7cWry/Logo-main.png"
+                                alt="Portfolio Builder"
+                                className="dashboard-nav-logo-img"
+                            />
+                        </Link>
                         <div className="nav-actions">
                             <span className="credits-badge">💳 {profile?.credits ?? 0} Credits</span>
                             {profile?.role === 'admin' && (

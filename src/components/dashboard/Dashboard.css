@@ -23,6 +23,24 @@
   margin: 0 auto;
 }
 
+.dashboard-nav-logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.dashboard-nav-logo-img {
+  height: 36px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+  transition: opacity 0.2s ease;
+}
+
+.dashboard-nav-logo-img:hover {
+  opacity: 0.85;
+}
+
 .nav-brand {
   display: flex;
   align-items: center;

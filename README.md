@@ -109,4 +109,4 @@ All rights reserved. Will be licensed under MIT after project completion.
 
 ---
 
-**Built by Team mehedyk**
+**Built by mehedyk**
